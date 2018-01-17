@@ -93,6 +93,15 @@ class WorkspaceActivateForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
+  public function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions['cancel']['#attributes']['class'][] = 'dialog-cancel';
+    return $actions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
       $this->workspaceManager->setActiveWorkspace($this->entity);
