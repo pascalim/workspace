@@ -19,6 +19,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *     singular = "@count workspace association",
  *     plural = "@count workspace associations"
  *   ),
+ *   handlers = {
+ *     "storage" = "Drupal\workspace\WorkspaceAssociationStorage"
+ *   },
  *   base_table = "workspace_association",
  *   revision_table = "workspace_association_revision",
  *   entity_keys = {
@@ -66,6 +69,13 @@ class WorkspaceAssociation extends ContentEntityBase {
       ->setDescription(new TranslatableMarkup('The revision ID of the content entity associated with this workspace.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
+
+    $fields['deployed'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Deployed'))
+      ->setDescription(new TranslatableMarkup('Whether this content entity revision has been deployed or not.'))
+      ->setRequired(TRUE)
+      ->setRevisionable(TRUE)
+      ->setDefaultValue(FALSE);
 
     return $fields;
   }

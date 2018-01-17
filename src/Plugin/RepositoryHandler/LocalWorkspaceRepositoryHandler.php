@@ -210,6 +210,9 @@ class LocalWorkspaceRepositoryHandler extends RepositoryHandlerBase implements R
     // Switch back to the original active workspace, so that the user performing
     // the replication is back on the workspace they started on.
     $this->workspaceManager->setActiveWorkspace($current_active);
+
+    // Mark all the Workspace association entities as deployed.
+    $this->entityTypeManager->getStorage('workspace_association')->markAsDeployed($source_workspace);
   }
 
 }
