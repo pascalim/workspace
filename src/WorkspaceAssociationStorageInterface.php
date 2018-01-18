@@ -10,11 +10,11 @@ use Drupal\Core\Entity\ContentEntityStorageInterface;
 interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInterface {
 
   /**
-   * Marks all workspace association entities deployed for a given workspace.
+   * Marks all workspace association entities pushed for a given workspace.
    *
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   A workspace entity.
    */
-  public function markAsDeployed(WorkspaceInterface $workspace);
+  public function markAsPushed(WorkspaceInterface $workspace);
 
 }

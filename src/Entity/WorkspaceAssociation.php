@@ -70,9 +70,9 @@ class WorkspaceAssociation extends ContentEntityBase {
       ->setRequired(TRUE)
       ->setRevisionable(TRUE);
 
-    $fields['deployed'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(new TranslatableMarkup('Deployed'))
-      ->setDescription(new TranslatableMarkup('Whether this content entity revision has been deployed or not.'))
+    $fields['pushed'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(new TranslatableMarkup('Pushed'))
+      ->setDescription(new TranslatableMarkup('Whether this content entity revision has been pushed or not.'))
       ->setRequired(TRUE)
       ->setRevisionable(TRUE)
       ->setDefaultValue(FALSE);

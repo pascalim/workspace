@@ -7,20 +7,20 @@ use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 /**
  * Defines the storage handler class for the Workspace association entity type.
  */
-class WorkspaceAssociationStorage extends SqlContentEntityStorage {
+class WorkspaceAssociationStorage extends SqlContentEntityStorage implements WorkspaceAssociationStorageInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function markAsDeployed(WorkspaceInterface $workspace) {
+  public function markAsPushed(WorkspaceInterface $workspace) {
     $this->database
       ->update($this->entityType->getBaseTable())
-      ->fields(['deployed' => TRUE])
+      ->fields(['pushed' => TRUE])
       ->condition('workspace', $workspace->id())
       ->execute();
     $this->database
       ->update($this->entityType->getRevisionTable())
-      ->fields(['deployed' => TRUE])
+      ->fields(['pushed' => TRUE])
       ->condition('workspace', $workspace->id())
       ->execute();
   }
