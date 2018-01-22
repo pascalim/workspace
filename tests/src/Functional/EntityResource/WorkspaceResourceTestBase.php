@@ -66,7 +66,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
     $workspace = Workspace::create([
       'id' => 'layla',
       'label' => 'Layla',
-      'target' => 'local_workspace:live',
+      'target' => 'live',
     ]);
     $workspace->save();
     return $workspace;
@@ -120,7 +120,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
       ],
       'target' => [
         [
-          'value' => 'local_workspace:live',
+          'value' => 'live',
         ],
       ],
       'uuid' => [

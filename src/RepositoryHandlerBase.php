@@ -18,6 +18,37 @@ abstract class RepositoryHandlerBase extends PluginBase implements RepositoryHan
   use DependencyTrait;
 
   /**
+   * The source repository identifier.
+   *
+   * @var string
+   */
+  protected $source;
+
+  /**
+   * The target repository identifier.
+   *
+   * @var string
+   */
+  protected $target;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    if (!isset($configuration['source'])) {
+      throw new \InvalidArgumentException('Missing repository handler source configuration');
+    }
+    if (!isset($configuration['target'])) {
+      throw new \InvalidArgumentException('Missing repository handler target configuration');
+    }
+
+    $this->source = $configuration['source'];
+    $this->target = $configuration['target'];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getLabel() {

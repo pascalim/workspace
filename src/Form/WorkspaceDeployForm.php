@@ -65,17 +65,53 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    /* @var \Drupal\workspace\WorkspaceInterface $workspace */
-    $workspace = $this->entity;
+    $repository_handler = $this->entity->getRepositoryHandlerPlugin();
 
-    // We can not deploy if we do not have a valid target.
-    if (!$workspace->getRepositoryHandlerPlugin()) {
+    // We can not push or pull if we do not have a valid target.
+    if (!$repository_handler) {
       throw new HttpException(500, 'The specified repository handler plugin does not exist.');
     }
 
-    $form['help'] = [
-      '#markup' => $this->t('Deploy all %source_label content to %target_label, or refresh %source_label with content from %target_label.', ['%source_label' => $workspace->label(), '%target_label' => $workspace->getRepositoryHandlerPlugin()->getLabel()]),
+    $args = [
+      '%source_label' => $this->entity->label(),
+      '%target_label' => $repository_handler->getLabel(),
     ];
+    $form['#title'] = $this->t('Deploy %source_label workspace', $args);
+
+    // List the changes that can be pushed.
+    if ($source_rev_diff = $repository_handler->getSourceRevisionDifference()) {
+      $total_count = count($source_rev_diff, COUNT_RECURSIVE) - count($source_rev_diff);
+      $form['deploy'] = [
+        '#theme' => 'item_list',
+        '#title' => $this->formatPlural($total_count, 'There is @count item that can be deployed from %source_label to %target_label', 'There are @count items that can be deployed from %source_label to %target_label', $args),
+        '#items' => [],
+        '#total_count' => $total_count,
+      ];
+      foreach ($source_rev_diff as $entity_type_id => $revision_difference) {
+        $form['deploy']['#items'][$entity_type_id] = $this->entityTypeManager->getDefinition($entity_type_id)->getCountLabel(count($revision_difference));
+      }
+    }
+
+    // List the changes that can be pulled.
+    if ($target_rev_diff = $repository_handler->getTargetRevisionDifference()) {
+      $total_count = count($target_rev_diff, COUNT_RECURSIVE) - count($target_rev_diff);
+      $form['refresh'] = [
+        '#theme' => 'item_list',
+        '#title' => $this->formatPlural($total_count, 'There is @count item that can be refreshed from %target_label to %source_label', 'There are @count items that can be refreshed from %target_label to %source_label', $args),
+        '#items' => [],
+        '#total_count' => $total_count,
+      ];
+      foreach ($target_rev_diff as $entity_type_id => $revision_difference) {
+        $form['deploy']['#items'][$entity_type_id] = $this->entityTypeManager->getDefinition($entity_type_id)->getCountLabel(count($revision_difference));
+      }
+    }
+
+    // If there are no changes to push or pull, show an informational message.
+    if (!isset($form['deploy']) && !isset($form['refresh'])) {
+      $form['help'] = [
+        '#markup' => $this->t('There are no changes that can be deployed from %source_label to %target_label.', $args),
+      ];
+    }
 
     return $form;
   }
@@ -86,15 +122,29 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
 
-    $target_label = $this->entity->getRepositoryHandlerPlugin()->getLabel();
+    $repositoy_handler = $this->entity->getRepositoryHandlerPlugin();
 
-    $elements['submit']['#value'] = $this->t('Deploy to @target', ['@target' => $target_label]);
-    $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
-    $elements['update'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Refresh from @target', ['@target' => $target_label]),
-      '#submit' => ['::submitForm', '::update'],
-    ];
+    if (isset($form['deploy'])) {
+      $total_count = $form['deploy']['#total_count'];
+      $elements['submit']['#value'] = $this->formatPlural($total_count, 'Deploy @count item to @target', 'Deploy @count items to @target', ['@target' => $repositoy_handler->getLabel()]);
+      $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
+    }
+    else {
+      // Do not allow the 'Deploy' operation if there's nothing to push.
+      $elements['submit']['#value'] = $this->t('Deploy');
+      $elements['submit']['#disabled'] = TRUE;
+    }
+
+    // Only show the 'Refresh' operation if there's something to pull.
+    if (isset($form['refresh'])) {
+      $total_count = $form['refresh']['#total_count'];
+      $elements['refresh'] = [
+        '#type' => 'submit',
+        '#value' => $this->formatPlural($total_count, 'Refresh @count item from @target', 'Refresh @count items from @target', ['@target' => $repositoy_handler->getLabel()]),
+        '#submit' => ['::submitForm', '::refresh'],
+      ];
+    }
+
     $elements['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
@@ -117,8 +167,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     try {
-      $repository_handler = $workspace->getRepositoryHandlerPlugin();
-      $repository_handler->replicate($workspace->getLocalRepositoryHandlerPlugin(), $repository_handler);
+      $workspace->getRepositoryHandlerPlugin()->push();
       $this->messenger->addMessage($this->t('Successful deployment.'));
     }
     catch (\Exception $e) {
@@ -135,17 +184,16 @@ class WorkspaceDeployForm extends ContentEntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function update(array &$form, FormStateInterface $form_state) {
+  public function refresh(array &$form, FormStateInterface $form_state) {
     $workspace = $this->entity;
 
     try {
-      $repository_handler = $workspace->getRepositoryHandlerPlugin();
-      $repository_handler->replicate($repository_handler, $workspace->getLocalRepositoryHandlerPlugin());
-      $this->messenger->addMessage($this->t('Update successful.'));
+      $workspace->getRepositoryHandlerPlugin()->pull();
+      $this->messenger->addMessage($this->t('Refresh successful.'));
     }
     catch (\Exception $e) {
       watchdog_exception('workspace', $e);
-      $this->messenger->addMessage($this->t('Update error'), 'error');
+      $this->messenger->addMessage($this->t('refresh error'), 'error');
     }
   }
 

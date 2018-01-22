@@ -22,6 +22,27 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
   const EMPTY_VALUE = '_none';
 
   /**
+   * Indicate that an item has been updated both on the source and the target.
+   *
+   * @var int
+   */
+  const CONFLICT_UPDATE_ON_CHANGE = 1;
+
+  /**
+   * Indicate that an item updated on the source has been deleted on the target.
+   *
+   * @var int
+   */
+  const CONFLICT_UPDATE_ON_DELETE = 2;
+
+  /**
+   * Indicate that an item deleted on the source has been changed on the target.
+   *
+   * @var int
+   */
+  const CONFLICT_DELETE_ON_CHANGE = 3;
+
+  /**
    * Returns the label of the repository handler.
    *
    * This is used as a form label where a user selects the replication target.
@@ -42,13 +63,40 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
   public function getDescription();
 
   /**
-   * Replicates content from a source repository to a target repository.
-   *
-   * @param \Drupal\workspace\RepositoryHandlerInterface $source
-   *   The repository handler to replicate from.
-   * @param \Drupal\workspace\RepositoryHandlerInterface $target
-   *   The repository handler to replicate to.
+   * Pushes content from a source repository to a target repository.
    */
-  public function replicate(RepositoryHandlerInterface $source, RepositoryHandlerInterface $target);
+  public function push();
+
+  /**
+   * Pulls content from a target repository to a source repository.
+   */
+  public function pull();
+
+  /**
+   * Checks if there are any conflicts between the source and the target.
+   *
+   * @return array
+   *   Returns an array consisting of the number of conflicts between the source
+   *   and the target, keyed by the conflict type constant.
+   */
+  public function checkConflictsOnTarget();
+
+  /**
+   * Gets the revision identifiers for items which have changed on the target.
+   *
+   * @return array
+   *   A multidimensional array of revision identifiers, either the revision ID
+   *   or the revision UUID, keyed by entity type IDs.
+   */
+  public function getTargetRevisionDifference();
+
+  /**
+   * Gets the revision identifiers for items which have changed on the source.
+   *
+   * @return array
+   *   A multidimensional array of revision identifiers, either the revision ID
+   *   or the revision UUID, keyed by entity type IDs.
+   */
+  public function getSourceRevisionDifference();
 
 }

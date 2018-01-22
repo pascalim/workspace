@@ -41,7 +41,7 @@ function workspace_install() {
   Workspace::create([
     'id' => 'stage',
     'label' => 'Stage',
-    'target' => 'local_workspace:live',
+    'target' => 'live',
     'uid' => $owner_id,
   ])->save();
 }

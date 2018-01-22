@@ -111,7 +111,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDescription(new TranslatableMarkup('The workspace to push to and pull from.'))
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setDefaultValue('local_workspace:live');
+      ->setDefaultValue('live');
 
     return $fields;
   }
@@ -121,15 +121,12 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public function getRepositoryHandlerPlugin() {
     if (($target = $this->target->value) && $target !== RepositoryHandlerInterface::EMPTY_VALUE) {
-      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($target);
+      $configuration = [
+        'source' => $this->id(),
+        'target' => $target,
+      ];
+      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($target, $configuration);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLocalRepositoryHandlerPlugin() {
-    return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance('local_workspace:' . $this->id());
   }
 
   /**

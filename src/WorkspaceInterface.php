@@ -22,14 +22,6 @@ interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterf
   public function getRepositoryHandlerPlugin();
 
   /**
-   * Gets an instance of the local repository handler plugin for the workspace.
-   *
-   * @return \Drupal\workspace\Plugin\RepositoryHandler\LocalWorkspaceRepositoryHandler
-   *   A local repository handler plugin object.
-   */
-  public function getLocalRepositoryHandlerPlugin();
-
-  /**
    * Determines whether the workspace is the default one or not.
    *
    * @return bool

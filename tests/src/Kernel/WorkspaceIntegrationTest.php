@@ -104,7 +104,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     // Create two workspaces by default, 'live' and 'stage'.
     $this->workspaces['live'] = Workspace::create(['id' => 'live']);
     $this->workspaces['live']->save();
-    $this->workspaces['stage'] = Workspace::create(['id' => 'stage', 'target' => 'local_workspace:live']);
+    $this->workspaces['stage'] = Workspace::create(['id' => 'stage', 'target' => 'live']);
     $this->workspaces['stage']->save();
 
     $permissions = [
@@ -298,7 +298,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
         ],
       ],
     ]);
-    $test_scenarios['deploy_stage_to_live'] = $revision_state;
+    $test_scenarios['push_stage_to_live'] = $revision_state;
 
     // Check the initial state after the module was installed.
     $this->assertWorkspaceStatus($test_scenarios['initial_state'], 'node');
@@ -330,9 +330,8 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
-    $repository_handler = $this->workspaces['stage']->getRepositoryHandlerPlugin();
-    $repository_handler->replicate($this->workspaces['stage']->getLocalRepositoryHandlerPlugin(), $repository_handler);
-    $this->assertWorkspaceStatus($test_scenarios['deploy_stage_to_live'], 'node');
+    $this->workspaces['stage']->getRepositoryHandlerPlugin()->push();
+    $this->assertWorkspaceStatus($test_scenarios['push_stage_to_live'], 'node');
   }
 
   /**
@@ -593,13 +592,9 @@ class WorkspaceIntegrationTest extends KernelTestBase {
    *   The ID of the workspace to switch to.
    */
   protected function switchToWorkspace($workspace_id) {
-    /** @var \Drupal\workspace\WorkspaceManager $workspace_manager */
-    $workspace_manager = \Drupal::service('workspace.manager');
-    if ($workspace_manager->getActiveWorkspace()->id() !== $workspace_id) {
-      // Switch the test runner's context to the specified workspace.
-      $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
-      \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);
-    }
+    // Switch the test runner's context to the specified workspace.
+    $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+    \Drupal::service('workspace.manager')->setActiveWorkspace($workspace);
   }
 
   /**
