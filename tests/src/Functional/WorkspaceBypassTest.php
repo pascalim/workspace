@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 
@@ -14,7 +13,6 @@ use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 class WorkspaceBypassTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-  use BlockCreationTrait;
   use ContentTypeCreationTrait;
 
   /**

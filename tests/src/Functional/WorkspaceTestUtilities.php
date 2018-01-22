@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
+use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\WorkspaceInterface;
 
@@ -11,6 +12,8 @@ use Drupal\workspace\WorkspaceInterface;
  * This trait will not work if not used in a child of BrowserTestBase.
  */
 trait WorkspaceTestUtilities {
+
+  use BlockCreationTrait;
 
   /**
    * Loads a single entity by its label.
@@ -68,7 +71,7 @@ trait WorkspaceTestUtilities {
    */
   protected function setupWorkspaceSwitcherBlock() {
     // Add the block to the sidebar.
-    $this->placeBlock('workspace_switcher_block', [
+    $this->placeBlock('workspace_switcher', [
       'id' => 'workspaceswitcher',
       'region' => 'sidebar_first',
       'label' => 'Workspace switcher',
@@ -94,7 +97,7 @@ trait WorkspaceTestUtilities {
     /** @var \Drupal\Tests\WebAssert $session */
     $session = $this->assertSession();
     $session->buttonExists('Activate');
-    $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], t('Activate'));
+    $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], 'Activate');
     $session->pageTextContains($workspace->label() . ' is now the active workspace.');
   }
 
@@ -124,11 +127,11 @@ trait WorkspaceTestUtilities {
     $page = $session->getPage();
     $page->fillField('Title', $label);
     if ($publish) {
-      $page->findButton(t('Save'))->click();
+      $page->findButton('Save')->click();
     }
     else {
       $page->uncheckField('Published');
-      $page->findButton(t('Save'))->click();
+      $page->findButton('Save')->click();
     }
 
     $session->getPage()->hasContent("{$label} has been created");

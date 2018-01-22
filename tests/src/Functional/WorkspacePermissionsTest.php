@@ -73,7 +73,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
     $page->fillField('label', 'Bears again');
     $page->fillField('id', 'bears');
-    $page->findButton(t('Save'))->click();
+    $page->findButton('Save')->click();
     $page->hasContent('Bears again (bears)');
 
     // Now login as a different user and ensure they don't have edit access,
@@ -117,7 +117,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
     $page->fillField('label', 'Bears again');
     $page->fillField('id', 'bears');
-    $page->findButton(t('Save'))->click();
+    $page->findButton('Save')->click();
     $page->hasContent('Bears again (bears)');
 
     // Now login as a different user and ensure they don't have edit access,

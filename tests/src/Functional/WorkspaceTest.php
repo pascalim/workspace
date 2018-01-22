@@ -65,7 +65,7 @@ class WorkspaceTest extends BrowserTestBase {
     $page = $this->getSession()->getPage();
     $page->fillField('label', 'workspace2');
     $page->fillField('id', 'A!"£%^&*{}#~@?');
-    $page->findButton(t('Save'))->click();
+    $page->findButton('Save')->click();
     $page->hasContent("This value is not valid");
   }
 

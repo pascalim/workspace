@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -13,7 +12,6 @@ use Drupal\Tests\BrowserTestBase;
 class WorkspaceSwitcherTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
-  use BlockCreationTrait;
 
   /**
    * {@inheritdoc}
@@ -45,7 +43,7 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
 
     $this->assertSession()->statusCodeEquals(200);
     $page = $this->getSession()->getPage();
-    $page->findButton(t('Confirm'))->click();
+    $page->findButton('Confirm')->click();
 
     $page->findLink($gravity->label());
   }

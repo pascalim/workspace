@@ -12,12 +12,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides a 'Workspace switcher' block.
  *
  * @Block(
- *   id = "workspace_switcher_block",
+ *   id = "workspace_switcher",
  *   admin_label = @Translation("Workspace switcher"),
  *   category = @Translation("Workspace"),
  * )
  */
-class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class WorkspaceSwitcherBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The form builder.
@@ -34,7 +34,7 @@ class WorkspaceBlock extends BlockBase implements ContainerFactoryPluginInterfac
   protected $entityTypeManager;
 
   /**
-   * Constructs a new WorkspaceBlock instance.
+   * Constructs a new WorkspaceSwitcherBlock instance.
    *
    * @param array $configuration
    *   The plugin configuration.
