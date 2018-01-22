@@ -4,6 +4,7 @@ namespace Drupal\Tests\workspace\Functional;
 
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 
 /**
  * Tests access bypass permission controls on workspaces.
@@ -14,6 +15,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
 
   use WorkspaceTestUtilities;
   use BlockCreationTrait;
+  use ContentTypeCreationTrait;
 
   /**
    * {@inheritdoc}
@@ -30,7 +32,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
       'view own workspace',
     ];
 
-    $this->createNodeType('Test', 'test');
+    $this->createContentType(['type' => 'test', 'label' => 'Test']);
     $this->setupWorkspaceSwitcherBlock();
 
     $ditka = $this->drupalCreateUser(array_merge($permissions, ['create test content']));
@@ -88,7 +90,7 @@ class WorkspaceBypassTest extends BrowserTestBase {
       'bypass entity access own workspace',
     ];
 
-    $this->createNodeType('Test', 'test');
+    $this->createContentType(['type' => 'test', 'label' => 'Test']);
     $this->setupWorkspaceSwitcherBlock();
 
     $ditka = $this->drupalCreateUser(array_merge($permissions, ['create test content']));

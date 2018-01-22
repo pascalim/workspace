@@ -164,7 +164,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
       ],
     ];
 
-    $calls ++;
+    $calls++;
     return $normalized_post_entity;
   }
 

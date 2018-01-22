@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\workspace\Functional;
 
-use Drupal\node\Entity\NodeType;
 use Drupal\workspace\Entity\Workspace;
 use Drupal\workspace\WorkspaceInterface;
 
@@ -97,22 +96,6 @@ trait WorkspaceTestUtilities {
     $session->buttonExists('Activate');
     $this->drupalPostForm(NULL, ['workspace_id' => $workspace->id()], t('Activate'));
     $session->pageTextContains($workspace->label() . ' is now the active workspace.');
-  }
-
-  /**
-   * Creates a new node type.
-   *
-   * @param string $label
-   *   The human-readable label of the type to create.
-   * @param string $machine_name
-   *   The machine name of the type to create.
-   */
-  protected function createNodeType($label, $machine_name) {
-    $node_type = NodeType::create([
-      'type' => $machine_name,
-      'label' => $label,
-    ]);
-    $node_type->save();
   }
 
   /**
