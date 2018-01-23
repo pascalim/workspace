@@ -13,15 +13,13 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
   /**
    * {@inheritdoc}
    */
-  public function markAsPushed(WorkspaceInterface $workspace) {
+  public function postPush(WorkspaceInterface $workspace) {
     $this->database
-      ->update($this->entityType->getBaseTable())
-      ->fields(['pushed' => TRUE])
+      ->delete($this->entityType->getBaseTable())
       ->condition('workspace', $workspace->id())
       ->execute();
     $this->database
-      ->update($this->entityType->getRevisionTable())
-      ->fields(['pushed' => TRUE])
+      ->delete($this->entityType->getRevisionTable())
       ->condition('workspace', $workspace->id())
       ->execute();
   }
@@ -29,16 +27,12 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
   /**
    * {@inheritdoc}
    */
-  public function getTrackedEntities($workspace_id, $all_revisions = FALSE, $pushed = NULL, $group = TRUE) {
+  public function getTrackedEntities($workspace_id, $all_revisions = FALSE, $group = TRUE) {
     $table = $all_revisions ? $this->getRevisionTable() : $this->getBaseTable();
     $query = $this->database->select($table, 'base_table');
     $query
       ->fields('base_table', ['content_entity_type_id', 'content_entity_id', 'content_entity_revision_id'])
       ->condition('workspace', $workspace_id);
-
-    if ($pushed !== NULL) {
-      $query->condition('pushed', $pushed);
-    }
 
     $tracked_revisions = [];
     foreach ($query->execute() as $record) {
@@ -60,16 +54,12 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
   /**
    * {@inheritdoc}
    */
-  public function isEntityTracked(EntityInterface $entity, $pushed = NULL) {
+  public function isEntityTracked(EntityInterface $entity) {
     $query = $this->database->select($this->getBaseTable(), 'base_table');
     $query
       ->fields('base_table', ['workspace'])
       ->condition('content_entity_type_id', $entity->getEntityTypeId())
       ->condition('content_entity_id', $entity->id());
-
-    if ($pushed !== NULL) {
-      $query->condition('pushed', $pushed);
-    }
 
     return $query->execute()->fetchCol();
   }

@@ -232,7 +232,6 @@ class EntityOperations implements ContainerInjectionInterface {
     // otherwise create a new entity with the type and ID.
     if (!empty($workspace_association)) {
       $workspace_association->setNewRevision(TRUE);
-      $workspace_association->set('pushed', FALSE);
     }
     else {
       $workspace_association = WorkspaceAssociation::create([

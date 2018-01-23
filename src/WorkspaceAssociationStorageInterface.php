@@ -16,7 +16,7 @@ interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInter
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   A workspace entity.
    */
-  public function markAsPushed(WorkspaceInterface $workspace);
+  public function postPush(WorkspaceInterface $workspace);
 
   /**
    * Retrieves the content revisions tracked by a given workspace.
@@ -26,9 +26,6 @@ interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInter
    * @param bool $all_revisions
    *   (optional) Whether to return all the tracked revisions for each entity or
    *   just the latest tracked revision. Defaults to FALSE.
-   * @param bool|null $pushed
-   *   (optional) Whether to add a condition on the 'pushed' field, and if so,
-   *   the condition value. Defaults to NULL, which doesn't add any condition.
    * @param bool $group
    *   (optional) Whether to group the results by their entity type ID. Defaults
    *   to TRUE.
@@ -40,21 +37,18 @@ interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInter
    *   an array of entity IDs, keyed by revision IDs. If the $group parameter is
    *   FALSE, returns a single level array containing all the tracked entities.
    */
-  public function getTrackedEntities($workspace_id, $all_revisions = FALSE, $pushed = NULL, $group = TRUE);
+  public function getTrackedEntities($workspace_id, $all_revisions = FALSE, $group = TRUE);
 
   /**
    * Checks if a given entity is tracked in one or multiple workspaces.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   An entity object.
-   * @param bool|null $pushed
-   *   (optional) Whether to add a condition on the 'pushed' field, and if so,
-   *   the condition value. Defaults to NULL, which doesn't add any condition.
    *
    * @return string[]
    *   An array of workspace IDs where the given entity is tracked, or an empty
    *   array if it's not tracked anywhere.
    */
-  public function isEntityTracked(EntityInterface $entity, $pushed = NULL);
+  public function isEntityTracked(EntityInterface $entity);
 
 }

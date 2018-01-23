@@ -111,8 +111,9 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
       }
     }
 
-    // Mark all the Workspace association entities as pushed.
-    $this->workspaceAssociationStorage->markAsPushed($this->sourceWorkspace);
+    // Notify the workspace association storage that a workspace has been
+    // pushed.
+    $this->workspaceAssociationStorage->postPush($this->sourceWorkspace);
   }
 
   /**
@@ -168,7 +169,7 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
    */
   public function getSourceRevisionDifference() {
     // Get the Workspace association revisions which haven't been pushed yet.
-    return $this->workspaceAssociationStorage->getTrackedEntities($this->source, FALSE, FALSE);
+    return $this->workspaceAssociationStorage->getTrackedEntities($this->source);
   }
 
 }

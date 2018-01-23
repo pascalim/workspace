@@ -330,8 +330,24 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
-    $this->workspaces['stage']->getRepositoryHandlerPlugin()->push();
+    $stage_repository_handler = $this->workspaces['stage']->getRepositoryHandlerPlugin();
+
+    // Check which revisions need to be pushed.
+    $expected = [
+      'node' => [
+        3 => 1,
+        4 => 2,
+        5 => 3,
+        7 => 4,
+      ],
+    ];
+    $this->assertEquals($expected, $stage_repository_handler->getSourceRevisionDifference());
+
+    $stage_repository_handler->push();
     $this->assertWorkspaceStatus($test_scenarios['push_stage_to_live'], 'node');
+
+    // Check that there are no more revisions to push.
+    $this->assertEmpty($stage_repository_handler->getSourceRevisionDifference());
   }
 
   /**
