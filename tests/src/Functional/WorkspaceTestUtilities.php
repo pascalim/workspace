@@ -111,7 +111,7 @@ trait WorkspaceTestUtilities {
    * @param bool $publish
    *   The publishing status to set.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\node\NodeInterface
    *   The Node that was just created.
    *
    * @throws \Behat\Mink\Exception\ElementNotFoundException

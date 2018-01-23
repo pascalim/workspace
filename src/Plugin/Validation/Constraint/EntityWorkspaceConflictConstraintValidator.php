@@ -1,0 +1,63 @@
+<?php
+
+namespace Drupal\workspace\Plugin\Validation\Constraint;
+
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
+
+/**
+ * Validates the EntityWorkspaceConflict constraint.
+ */
+class EntityWorkspaceConflictConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs an EntityUntranslatableFieldsConstraintValidator object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validate($entity, Constraint $constraint) {
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    if (isset($entity) && !$entity->isNew()) {
+      /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
+      $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
+
+      if ($workspace_ids = $workspace_association_storage->isEntityTracked($entity, FALSE)) {
+        // An entity can only be edited in one workspace.
+        $workspace_id = reset($workspace_ids);
+        $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+
+        $this->context->buildViolation($constraint->message)
+          ->setParameter('%label', $workspace->label())
+          ->addViolation();
+      }
+    }
+  }
+
+}

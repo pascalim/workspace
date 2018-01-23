@@ -9,12 +9,14 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Url;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\workspace\EntityAccess;
 use Drupal\workspace\EntityOperations;
+use Drupal\workspace\EntityTypeInfo;
 use Drupal\workspace\ViewsQueryAlter;
 
 /**
@@ -29,6 +31,24 @@ function workspace_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<p>' . t('The Workspace module allows workspaces to be defined and switched between. Content is then assigned to the active workspace when created. For more information, see the <a href=":workspace">online documentation for the Workspace module</a>.', [':workspace' => 'https://www.drupal.org/node/2824024']) . '</p>';
       return $output;
   }
+}
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function workspace_entity_type_build(array &$entity_types) {
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->entityTypeBuild($entity_types);
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function workspace_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  return \Drupal::service('class_resolver')
+    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->formAlter($form, $form_state, $form_id);
 }
 
 /**
