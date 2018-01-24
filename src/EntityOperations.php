@@ -167,6 +167,8 @@ class EntityOperations implements ContainerInjectionInterface {
       return;
     }
 
+    $this->trackEntity($entity);
+
     // Handle the case when a new published entity was created in a non-default
     // workspace and create a published pending revision for it.
     if (isset($entity->_initialPublished)) {
@@ -176,9 +178,6 @@ class EntityOperations implements ContainerInjectionInterface {
       $pending_revision->setPublished();
       $pending_revision->isDefaultRevision(FALSE);
       $pending_revision->save();
-    }
-    else {
-      $this->trackEntity($entity);
     }
   }
 
@@ -198,7 +197,11 @@ class EntityOperations implements ContainerInjectionInterface {
       return;
     }
 
-    $this->trackEntity($entity);
+    // Only track new revisions.
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    if ($entity->getLoadedRevisionId() != $entity->getRevisionId()) {
+      $this->trackEntity($entity);
+    }
   }
 
   /**

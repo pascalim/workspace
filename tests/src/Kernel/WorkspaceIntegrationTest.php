@@ -123,15 +123,19 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $this->initializeWorkspaceModule();
 
     // Notes about the structure of the test scenarios:
+    // - a multi-dimensional array keyed by the workspace ID, then by the entity
+    //   ID and finally by the revision ID.
     // - 'default_revision' indicates the entity revision that should be
     //   returned by entity_load(), non-revision entity queries and non-revision
     //   views *in a given workspace*, it does not indicate what is actually
-    //   stored in the base entity tables.
+    //   stored in the base and data entity tables.
     $test_scenarios = [];
 
-    // A multi-dimensional array keyed by the workspace ID, then by the entity
-    // and finally by the revision ID.
-    //
+    // The $expected_workspace_association array holds the revision IDs which
+    // should be tracked by the Workspace Association entity type in each test
+    // scenario, keyed by workspace ID.
+    $expected_workspace_association = [];
+
     // In the initial state we have only the two revisions that were created
     // before the Workspace module was installed.
     $revision_state = [
@@ -169,6 +173,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ];
     $test_scenarios['initial_state'] = $revision_state;
+    $expected_workspace_association['initial_state'] = ['stage' => []];
 
     // Unpublish node 1 in 'stage'. The new revision is also added to 'live' but
     // it is not the default revision.
@@ -194,6 +199,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ]);
     $test_scenarios['unpublish_node_1_in_stage'] = $revision_state;
+    $expected_workspace_association['unpublish_node_1_in_stage'] = ['stage' => [3]];
 
     // Publish node 2 in 'stage'. The new revision is also added to 'live' but
     // it is not the default revision.
@@ -219,6 +225,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ]);
     $test_scenarios['publish_node_2_in_stage'] = $revision_state;
+    $expected_workspace_association['publish_node_2_in_stage'] = ['stage' => [3, 4]];
 
     // Adding a new unpublished node on 'stage' should create a single
     // unpublished revision on both 'stage' and 'live'.
@@ -243,6 +250,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ]);
     $test_scenarios['add_unpublished_node_in_stage'] = $revision_state;
+    $expected_workspace_association['add_unpublished_node_in_stage'] = ['stage' => [3, 4, 5]];
 
     // Adding a new published node on 'stage' should create two revisions, an
     // unpublished revision on 'live' and a published one on 'stage'.
@@ -277,6 +285,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ]);
     $test_scenarios['add_published_node_in_stage'] = $revision_state;
+    $expected_workspace_association['add_published_node_in_stage'] = ['stage' => [3, 4, 5, 6, 7]];
 
     // Deploying 'stage' to 'live' should simply make the latest revisions in
     // 'stage' the default ones in 'live'.
@@ -299,9 +308,11 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       ],
     ]);
     $test_scenarios['push_stage_to_live'] = $revision_state;
+    $expected_workspace_association['push_stage_to_live'] = ['stage' => []];
 
     // Check the initial state after the module was installed.
     $this->assertWorkspaceStatus($test_scenarios['initial_state'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['initial_state'], 'node');
 
     // Unpublish node 1 in 'stage'.
     $this->switchToWorkspace('stage');
@@ -310,6 +321,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $node->setUnpublished();
     $node->save();
     $this->assertWorkspaceStatus($test_scenarios['unpublish_node_1_in_stage'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['unpublish_node_1_in_stage'], 'node');
 
     // Publish node 2 in 'stage'.
     $this->switchToWorkspace('stage');
@@ -318,16 +330,19 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $node->setPublished();
     $node->save();
     $this->assertWorkspaceStatus($test_scenarios['publish_node_2_in_stage'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['publish_node_2_in_stage'], 'node');
 
     // Add a new unpublished node on 'stage'.
     $this->switchToWorkspace('stage');
     $this->createNode(['title' => 'stage - 3 - r5 - unpublished', 'created' => $this->createdTimestamp++, 'status' => FALSE]);
     $this->assertWorkspaceStatus($test_scenarios['add_unpublished_node_in_stage'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['add_unpublished_node_in_stage'], 'node');
 
     // Add a new published node on 'stage'.
     $this->switchToWorkspace('stage');
     $this->createNode(['title' => 'stage - 4 - r6 - published', 'created' => $this->createdTimestamp++, 'status' => TRUE]);
     $this->assertWorkspaceStatus($test_scenarios['add_published_node_in_stage'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['add_published_node_in_stage'], 'node');
 
     // Deploy 'stage' to 'live'.
     $stage_repository_handler = $this->workspaces['stage']->getRepositoryHandlerPlugin();
@@ -345,6 +360,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     $stage_repository_handler->push();
     $this->assertWorkspaceStatus($test_scenarios['push_stage_to_live'], 'node');
+    $this->assertWorkspaceAssociation($expected_workspace_association['push_stage_to_live'], 'node');
 
     // Check that there are no more revisions to push.
     $this->assertEmpty($stage_repository_handler->getSourceRevisionDifference());
@@ -598,6 +614,26 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
       $result = $query->execute();
       $this->assertEquals([$expected_value[$revision_key] => $expected_value[$id_key]], $result);
+    }
+  }
+
+  /**
+   * Checks the workspace_association entries for a test scenario.
+   *
+   * @param array $expected
+   *   An array of expected values, as defined in ::testWorkspaces().
+   * @param string $entity_type_id
+   *   The ID of the entity type that is being tested.
+   */
+  protected function assertWorkspaceAssociation(array $expected, $entity_type_id) {
+    /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
+    $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
+    foreach ($expected as $workspace_id => $expected_tracked_revision_ids) {
+      $tracked_entities = $workspace_association_storage->getTrackedEntities($workspace_id, TRUE, FALSE);
+      $tracked_entities = array_filter($tracked_entities, function ($tracked_entity) use ($entity_type_id) {
+        return $tracked_entity['entity_type_id'] === $entity_type_id;
+      });
+      $this->assertEquals($expected_tracked_revision_ids, array_column($tracked_entities, 'revision_id'));
     }
   }
 
