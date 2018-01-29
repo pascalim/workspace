@@ -2,6 +2,7 @@
 
 namespace Drupal\workspace\Plugin\RepositoryHandler;
 
+use Drupal\Core\Database\Connection;
 use Drupal\workspace\RepositoryHandlerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -42,6 +43,13 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
   protected $entityTypeManager;
 
   /**
+   * The database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
    * The workspace association storage.
    *
    * @var \Drupal\workspace\WorkspaceAssociationStorageInterface
@@ -59,11 +67,14 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Database\Connection $database
+   *   Database connection.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, Connection $database) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
+    $this->database = $database;
     $this->workspaceAssociationStorage = $entity_type_manager->getStorage('workspace_association');
     $this->sourceWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->source);
     $this->targetWorkspace = $this->entityTypeManager->getStorage('workspace')->load($this->target);
@@ -77,7 +88,8 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('database')
     );
   }
 
@@ -99,16 +111,25 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
       throw new WorkspaceConflictException();
     }
 
-    foreach ($this->getSourceRevisionDifference() as $entity_type_id => $revision_difference) {
-      $entity_revisions = $this->entityTypeManager->getStorage($entity_type_id)->loadMultipleRevisions(array_keys($revision_difference));
-      /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
-      foreach ($entity_revisions as $entity) {
-        // When pushing workspace-specific revisions to the default workspace
-        // (Live), we simply need to mark them as default revisions.
-        $entity->_isReplicating = TRUE;
-        $entity->isDefaultRevision(TRUE);
-        $entity->save();
+    $transaction = $this->database->startTransaction();
+    try {
+      foreach ($this->getSourceRevisionDifference() as $entity_type_id => $revision_difference) {
+        $entity_revisions = $this->entityTypeManager->getStorage($entity_type_id)
+          ->loadMultipleRevisions(array_keys($revision_difference));
+        /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
+        foreach ($entity_revisions as $entity) {
+          // When pushing workspace-specific revisions to the default workspace
+          // (Live), we simply need to mark them as default revisions.
+          $entity->_isReplicating = TRUE;
+          $entity->isDefaultRevision(TRUE);
+          $entity->save();
+        }
       }
+    }
+    catch (\Exception $e) {
+      $transaction->rollBack();
+      watchdog_exception('workspace', $e);
+      throw $e;
     }
 
     // Notify the workspace association storage that a workspace has been
