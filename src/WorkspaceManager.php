@@ -67,20 +67,6 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   protected $state;
 
   /**
-   * A list of workspace negotiators.
-   *
-   * @var \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
-   */
-  protected $negotiators = [];
-
-  /**
-   * A list of workspace negotiators sorted by their priority.
-   *
-   * @var \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
-   */
-  protected $sortedNegotiators;
-
-  /**
    * A logger instance.
    *
    * @var \Psr\Log\LoggerInterface
@@ -100,6 +86,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * @var array
    */
   protected $negotiatorIds;
+
+  /**
+   * The current active workspace.
+   *
+   * @var \Drupal\workspace\WorkspaceInterface
+   */
+  protected $activeWorkspace;
 
   /**
    * Constructs a new WorkspaceManager.
@@ -133,12 +126,12 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
-    if (!in_array($entity_type->id(), $this->blacklist, TRUE)
+    if (!isset($this->blacklist[$entity_type->id()])
       && $entity_type->entityClassImplements(EntityPublishedInterface::class)
       && $entity_type->isRevisionable()) {
       return TRUE;
     }
-    $this->blacklist[] = $entity_type->id();
+    $this->blacklist[$entity_type->id()] = $entity_type->id();
     return FALSE;
   }
 
@@ -159,18 +152,20 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function getActiveWorkspace() {
-    $request = $this->requestStack->getCurrentRequest();
-    foreach ($this->negotiatorIds as $negotiator_id) {
-      $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
-      if ($negotiator->applies($request)) {
-        if ($active_workspace = $negotiator->getActiveWorkspace($request)) {
-          break;
+    if (!isset($this->activeWorkspace)) {
+      $request = $this->requestStack->getCurrentRequest();
+      foreach ($this->negotiatorIds as $negotiator_id) {
+        $negotiator = $this->classResolver->getInstanceFromDefinition($negotiator_id);
+        if ($negotiator->applies($request)) {
+          if ($this->activeWorkspace = $negotiator->getActiveWorkspace($request)) {
+            break;
+          }
         }
       }
     }
 
     // The default workspace negotiator always returns a valid workspace.
-    return $active_workspace;
+    return $this->activeWorkspace;
   }
 
   /**
@@ -183,6 +178,8 @@ class WorkspaceManager implements WorkspaceManagerInterface {
       $this->logger->error('Denied access to view workspace {workspace}', ['workspace' => $workspace->label()]);
       throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
     }
+
+    $this->activeWorkspace = $workspace;
 
     // Set the workspace on the proper negotiator.
     $request = $this->requestStack->getCurrentRequest();
