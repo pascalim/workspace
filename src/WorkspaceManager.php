@@ -7,6 +7,8 @@ use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\Site\Settings;
+use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -58,6 +60,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   protected $currentUser;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * A list of workspace negotiators.
    *
    * @var \Drupal\workspace\Negotiator\WorkspaceNegotiatorInterface[]
@@ -101,6 +110,8 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
@@ -108,10 +119,11 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * @param array $negotiator_ids
    *   The workspace negotiator service IDs.
    */
-  public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerInterface $logger, ClassResolverInterface $class_resolver, array $negotiator_ids) {
+  public function __construct(RequestStack $request_stack, EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, StateInterface $state, LoggerInterface $logger, ClassResolverInterface $class_resolver, array $negotiator_ids) {
     $this->requestStack = $request_stack;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
+    $this->state = $state;
     $this->logger = $logger;
     $this->classResolver = $class_resolver;
     $this->negotiatorIds = $negotiator_ids;
@@ -188,6 +200,60 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     }
 
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function purgeDeletedWorkspacesBatch() {
+    $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
+    $batch_size = Settings::get('entity_update_batch_size', 50);
+
+    /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
+    $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
+
+    // Get the first deleted workspace from the list and delete the revisions
+    // associated with it, along with the workspace_association entries.
+    $workspace_id = reset($deleted_workspace_ids);
+    $workspace_association_ids = $workspace_association_storage
+      ->getQuery()
+      ->allRevisions()
+      ->accessCheck(FALSE)
+      ->condition('workspace', $workspace_id)
+      ->sort('revision_id', 'ASC')
+      ->range(0, $batch_size)
+      ->execute();
+
+    if ($workspace_association_ids) {
+      $workspace_associations = $workspace_association_storage->loadMultipleRevisions(array_keys($workspace_association_ids));
+      foreach ($workspace_associations as $workspace_association) {
+        $associated_entity_storage = $this->entityTypeManager->getStorage($workspace_association->content_entity_type_id->value);
+        // Delete the associated entity revision.
+        if ($entity = $associated_entity_storage->loadRevision($workspace_association->content_entity_revision_id->value)) {
+          if ($entity->isDefaultRevision()) {
+            $entity->delete();
+          }
+          else {
+            $associated_entity_storage->deleteRevision($workspace_association->content_entity_revision_id->value);
+          }
+        }
+
+        // Delete the workspace_association revision.
+        if ($workspace_association->isDefaultRevision()) {
+          $workspace_association->delete();
+        }
+        else {
+          $workspace_association_storage->deleteRevision($workspace_association->getRevisionId());
+        }
+      }
+    }
+
+    // Remove the deleted workspace ID entry from state if all its associated
+    // entities have been purged.
+    if (!$workspace_association_ids || ($workspace_association_ids && count($workspace_association_ids) < $batch_size)) {
+      unset($deleted_workspace_ids[$workspace_id]);
+      $this->state->set('workspace.deleted', $deleted_workspace_ids);
+    }
   }
 
 }

@@ -19,6 +19,10 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\workspace\WorkspaceInterface $entity */
+    if ($operation === 'delete' && $entity->isDefaultWorkspace()) {
+      return AccessResult::forbidden()->addCacheableDependency($entity);
+    }
+
     if ($account->hasPermission('administer workspaces')) {
       return AccessResult::allowed()->cachePerPermissions();
     }

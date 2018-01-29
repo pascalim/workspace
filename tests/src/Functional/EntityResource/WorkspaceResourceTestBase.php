@@ -221,11 +221,4 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
     return parent::getExpectedUnauthorizedAccessMessage($method);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function testDelete() {
-    // @todo Workspaces can not yet be deleted.
-  }
-
 }

@@ -33,6 +33,7 @@ class WorkspaceAccessTest extends KernelTestBase {
     $this->installSchema('system', ['sequences']);
 
     $this->installEntitySchema('workspace');
+    $this->installEntitySchema('workspace_association');
     $this->installEntitySchema('user');
 
     // User 1.
@@ -52,6 +53,8 @@ class WorkspaceAccessTest extends KernelTestBase {
       ['view', 'view own workspace'],
       ['update', 'edit any workspace'],
       ['update', 'edit own workspace'],
+      ['delete', 'delete any workspace'],
+      ['delete', 'delete own workspace'],
     ];
   }
 

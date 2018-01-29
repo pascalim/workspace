@@ -43,8 +43,6 @@ class WorkspacePermissionsTest extends BrowserTestBase {
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(403);
-
-    // @todo add Deletion checks once there's a UI for deletion.
   }
 
   /**
@@ -129,11 +127,83 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $packers = Workspace::load('packers');
 
     $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
-
     $this->assertSession()->statusCodeEquals(200);
 
     $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
+  }
+
+  /**
+   * Verifies that a user can create and delete only their own workspace.
+   */
+  public function testDeleteOwnWorkspace() {
+    $permissions = [
+      'access administration pages',
+      'administer site configuration',
+      'create workspace',
+      'delete own workspace',
+    ];
+    $editor1 = $this->drupalCreateUser($permissions);
+
+    // Login as a limited-access user and create a workspace.
+    $this->drupalLogin($editor1);
+    $bears = $this->createWorkspaceThroughUi('Bears', 'bears');
+
+    // Now try to delete that same workspace; We should be able to do so.
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Now login as a different user and ensure they don't have edit access,
+    // and vice versa.
+    $editor2 = $this->drupalCreateUser($permissions);
+
+    $this->drupalLogin($editor2);
+    $packers = $this->createWorkspaceThroughUi('Packers', 'packers');
+
+    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/delete");
+    $this->assertSession()->statusCodeEquals(200);
+
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->assertSession()->statusCodeEquals(403);
+  }
+
+  /**
+   * Verifies that a user can delete any workspace.
+   */
+  public function testDeleteAnyWorkspace() {
+    $permissions = [
+      'access administration pages',
+      'administer site configuration',
+      'create workspace',
+      'delete own workspace',
+    ];
+    $editor1 = $this->drupalCreateUser($permissions);
+
+    // Login as a limited-access user and create a workspace.
+    $this->drupalLogin($editor1);
+    $bears = $this->createWorkspaceThroughUi('Bears', 'bears');
+
+    // Now edit that same workspace; We should be able to do so.
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Now login as a different user and ensure they have delete access on both
+    // workspaces.
+    $admin = $this->drupalCreateUser(array_merge($permissions, ['delete any workspace']));
+
+    $this->drupalLogin($admin);
+    $packers = $this->createWorkspaceThroughUi('Packers', 'packers');
+
+    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/delete");
+    $this->assertSession()->statusCodeEquals(200);
+
+    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->assertSession()->statusCodeEquals(200);
+
+    // Check that the default workspace can not be deleted, even by a user with
+    // the "delete any workspace" permission.
+    $this->drupalGet("/admin/config/workflow/workspace/live/delete");
+    $this->assertSession()->statusCodeEquals(403);
   }
 
 }

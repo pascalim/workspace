@@ -1,7 +1,7 @@
 services:
   workspace.manager:
     class: Drupal\workspace\WorkspaceManager
-    arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@logger.channel.workspace', '@class_resolver']
+    arguments: ['@request_stack', '@entity_type.manager', '@current_user', '@state', '@logger.channel.workspace', '@class_resolver']
     tags:
       - { name: service_id_collector, tag: workspace_negotiator }
   plugin.manager.workspace.repository_handler:

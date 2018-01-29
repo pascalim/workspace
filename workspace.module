@@ -128,6 +128,13 @@ function workspace_rest_resource_alter(&$definitions) {
 }
 
 /**
+ * Implements hook_cron().
+ */
+function workspace_cron() {
+  \Drupal::service('workspace.manager')->purgeDeletedWorkspacesBatch();
+}
+
+/**
  * Implements hook_toolbar().
  */
 function workspace_toolbar() {

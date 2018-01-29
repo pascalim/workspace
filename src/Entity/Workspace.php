@@ -4,6 +4,7 @@ namespace Drupal\workspace\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -36,6 +37,7 @@ use Drupal\workspace\WorkspaceManager;
  *       "default" = "\Drupal\workspace\Form\WorkspaceForm",
  *       "add" = "\Drupal\workspace\Form\WorkspaceForm",
  *       "edit" = "\Drupal\workspace\Form\WorkspaceForm",
+ *       "delete" = "\Drupal\workspace\Form\WorkspaceDeleteForm",
  *       "activate" = "\Drupal\workspace\Form\WorkspaceActivateForm",
  *       "deploy" = "\Drupal\workspace\Form\WorkspaceDeployForm",
  *     },
@@ -55,6 +57,7 @@ use Drupal\workspace\WorkspaceManager;
  *   links = {
  *     "add-form" = "/admin/config/workflow/workspace/add",
  *     "edit-form" = "/admin/config/workflow/workspace/{workspace}/edit",
+ *     "delete-form" = "/admin/config/workflow/workspace/{workspace}/delete",
  *     "activate-form" = "/admin/config/workflow/workspace/{workspace}/activate",
  *     "deploy-form" = "/admin/config/workflow/workspace/{workspace}/deploy",
  *     "collection" = "/admin/config/workflow/workspace",
@@ -76,6 +79,8 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setDescription(new TranslatableMarkup('The workspace ID.'))
       ->setSetting('max_length', 128)
       ->setRequired(TRUE)
+      ->addConstraint('UniqueField')
+      ->addConstraint('DeletedWorkspace')
       ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[a-z0-9_]*$/']]);
 
     $fields['label'] = BaseFieldDefinition::create('string')
@@ -179,6 +184,25 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+
+    // Add the IDs of the deleted workspaces to the list of workspaces that will
+    // be purged on cron.
+    $state = \Drupal::state();
+    $deleted_workspace_ids = $state->get('workspace.deleted', []);
+    unset($entities[WorkspaceManager::DEFAULT_WORKSPACE]);
+    $deleted_workspace_ids += array_combine(array_keys($entities), array_keys($entities));
+    $state->set('workspace.deleted', $deleted_workspace_ids);
+
+    // Trigger a batch purge to allow empty workspaces to be deleted
+    // immediately.
+    \Drupal::service('workspace.manager')->purgeDeletedWorkspacesBatch();
   }
 
   /**
