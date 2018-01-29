@@ -140,16 +140,10 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
    * {@inheritdoc}
    */
   protected function getNormalizedPostEntity() {
-    // Work around the fact that core's REST test suite assumes that all content
-    // entity types have serial IDs.
-    // @todo Removed this when
-    //   https://www.drupal.org/project/drupal/issues/2935076 gets fixed.
-    static $calls = 0;
-
-    $normalized_post_entity = [
+    return [
       'id' => [
         [
-          'value' => $calls !== 1 ? static::$firstCreatedEntityId : static::$secondCreatedEntityId,
+          'value' => static::$firstCreatedEntityId,
         ],
       ],
       'label' => [
@@ -163,9 +157,6 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
         ],
       ],
     ];
-
-    $calls++;
-    return $normalized_post_entity;
   }
 
   /**
