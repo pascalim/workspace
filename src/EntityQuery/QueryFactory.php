@@ -11,7 +11,7 @@ use Drupal\workspace\WorkspaceManagerInterface;
 /**
  * Workspace specific entity query implementation.
  */
-class SqlQueryFactory extends BaseQueryFactory {
+class QueryFactory extends BaseQueryFactory {
 
   /**
    * The workspace manager.

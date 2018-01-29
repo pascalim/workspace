@@ -32,6 +32,7 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
     $query = $this->database->select($table, 'base_table');
     $query
       ->fields('base_table', ['content_entity_type_id', 'content_entity_id', 'content_entity_revision_id'])
+      ->orderBy('content_entity_revision_id', 'ASC')
       ->condition('workspace', $workspace_id);
 
     $tracked_revisions = [];
