@@ -604,7 +604,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
       $query
         ->condition($entity_keys['id'], $expected_value[$id_key])
         ->condition($entity_keys['label'], $expected_value[$label_key])
-        ->condition($entity_keys['published'], $expected_value[$published_key]);
+        ->condition($entity_keys['published'], (int) $expected_value[$published_key]);
 
       // If the entity is not expected to be the default revision, we need to
       // query all revisions if we want to find it.
