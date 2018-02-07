@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
-use Drupal\workspace\RepositoryHandlerInterface;
 use Drupal\workspace\WorkspaceInterface;
 use Drupal\workspace\WorkspaceManager;
 
@@ -27,7 +26,6 @@ use Drupal\workspace\WorkspaceManager;
  *     plural = "@count workspaces"
  *   ),
  *   handlers = {
- *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "list_builder" = "\Drupal\workspace\WorkspaceListBuilder",
  *     "access" = "Drupal\workspace\WorkspaceAccessControlHandler",
  *     "route_provider" = {
@@ -124,14 +122,22 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRepositoryHandlerPlugin() {
-    if (($target = $this->target->value) && $target !== RepositoryHandlerInterface::EMPTY_VALUE) {
-      $configuration = [
-        'source' => $this->id(),
-        'target' => $target,
-      ];
-      return \Drupal::service('plugin.manager.workspace.repository_handler')->createInstance($target, $configuration);
-    }
+  public function push() {
+    return $this->getRepositoryHandler()->push();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function pull() {
+    return $this->getRepositoryHandler()->pull();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRepositoryHandler() {
+    return \Drupal::service('plugin.manager.workspace.repository_handler')->createFromWorkspace($this);
   }
 
   /**

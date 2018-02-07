@@ -99,7 +99,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
           // An entity can only be edited in one workspace.
           $workspace_id = reset($workspace_ids);
 
-          if ($workspace_id != $this->workspaceManager->getActiveWorkspace()->id()) {
+          if ($workspace_id !== $this->workspaceManager->getActiveWorkspace()->id()) {
             $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
 
             $form['#markup'] = $this->t('The content is being edited in the %label workspace.', ['%label' => $workspace->label()]);

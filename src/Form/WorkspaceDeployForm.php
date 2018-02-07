@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Provides the workspace deploy form.
@@ -65,12 +64,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    $repository_handler = $this->entity->getRepositoryHandlerPlugin();
-
-    // We can not push or pull if we do not have a valid target.
-    if (!$repository_handler) {
-      throw new HttpException(500, 'The specified repository handler plugin does not exist.');
-    }
+    $repository_handler = $this->entity->getRepositoryHandler();
 
     $args = [
       '%source_label' => $this->entity->label(),
@@ -121,8 +115,9 @@ class WorkspaceDeployForm extends ContentEntityForm {
    */
   public function actions(array $form, FormStateInterface $form_state) {
     $elements = parent::actions($form, $form_state);
+    unset($elements['delete']);
 
-    $repositoy_handler = $this->entity->getRepositoryHandlerPlugin();
+    $repositoy_handler = $this->entity->getRepositoryHandler();
 
     if (isset($form['deploy'])) {
       $total_count = $form['deploy']['#total_count'];
@@ -167,12 +162,11 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     try {
-      $workspace->getRepositoryHandlerPlugin()->push();
+      $workspace->push();
       $this->messenger->addMessage($this->t('Successful deployment.'));
     }
     catch (\Exception $e) {
-      watchdog_exception('workspace', $e);
-      $this->messenger->addMessage($this->t('Deployment error'), 'error');
+      $this->messenger->addMessage($this->t('Deployment failed. All errors have been logged.'), 'error');
     }
   }
 
@@ -188,12 +182,11 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $workspace = $this->entity;
 
     try {
-      $workspace->getRepositoryHandlerPlugin()->pull();
+      $workspace->pull();
       $this->messenger->addMessage($this->t('Refresh successful.'));
     }
     catch (\Exception $e) {
-      watchdog_exception('workspace', $e);
-      $this->messenger->addMessage($this->t('refresh error'), 'error');
+      $this->messenger->addMessage($this->t('Refresh failed. All errors have been logged.'), 'error');
     }
   }
 

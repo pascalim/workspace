@@ -6,7 +6,6 @@
  */
 
 use Drupal\workspace\Entity\Workspace;
-use Drupal\workspace\RepositoryHandlerInterface;
 
 /**
  * Implements hook_install().
@@ -34,7 +33,7 @@ function workspace_install() {
   Workspace::create([
     'id' => 'live',
     'label' => 'Live',
-    'target' => RepositoryHandlerInterface::EMPTY_VALUE,
+    'target' => '',
     'uid' => $owner_id,
   ])->save();
 

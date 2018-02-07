@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\workspace\WorkspaceAccessException;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -112,18 +113,6 @@ class WorkspaceSwitcherForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $id = $form_state->getValue('workspace_id');
-
-    // Ensure the workspace by that ID exists.
-    if (!$this->workspaceStorage->load($id)) {
-      $form_state->setErrorByName('workspace_id', $this->t('This workspace does not exist.'));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $id = $form_state->getValue('workspace_id');
 
@@ -132,12 +121,11 @@ class WorkspaceSwitcherForm extends FormBase {
 
     try {
       $this->workspaceManager->setActiveWorkspace($workspace);
-      $this->messenger->addMessage($this->t("@workspace is now the active workspace.", ['@workspace' => $workspace->label()]));
+      $this->messenger->addMessage($this->t('%workspace_label is now the active workspace.', ['%workspace_label' => $workspace->label()]));
       $form_state->setRedirect('<front>');
     }
-    catch (\Exception $e) {
-      watchdog_exception('workspace', $e);
-      $this->messenger->addError($e->getMessage());
+    catch (WorkspaceAccessException $e) {
+      $this->messenger->addError($this->t('You do not have access to activate the %workspace_label workspace.', ['%workspace_label' => $workspace->label()]));
     }
   }
 

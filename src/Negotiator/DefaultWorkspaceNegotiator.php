@@ -52,6 +52,7 @@ class DefaultWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
       $default_workspace = $this->workspaceStorage->create([
         'id' => WorkspaceManager::DEFAULT_WORKSPACE,
         'label' => Unicode::ucwords(WorkspaceManager::DEFAULT_WORKSPACE),
+        'target' => '',
       ]);
       $default_workspace->enforceIsNew(FALSE);
 

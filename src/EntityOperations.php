@@ -78,7 +78,7 @@ class EntityOperations implements ContainerInjectionInterface {
       ->groupBy('content_entity_id')
       ->condition('content_entity_type_id', $entity_type_id)
       ->condition('content_entity_id', $entity_ids, 'IN')
-      ->condition('workspace', $active_workspace->id(), '=')
+      ->condition('workspace', $active_workspace->id())
       ->execute();
 
     // Since hook_entity_load() is called on both regular entity load as well as

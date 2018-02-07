@@ -12,14 +12,22 @@ use Drupal\user\EntityOwnerInterface;
 interface WorkspaceInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
   /**
+   * Pushes content from this workspace to the target repository.
+   */
+  public function push();
+
+  /**
+   * Pulls content from the target repository into this workspace.
+   */
+  public function pull();
+
+  /**
    * Gets an instance of the repository handler configured for the workspace.
    *
-   * @return \Drupal\workspace\RepositoryHandlerInterface|null
-   *   A repository handler plugin object or NULL if there is no target
-   *   configured for the workspace. A NULL return value can only be returned
-   *   for the default (i.e. Live) workspace.
+   * @return \Drupal\workspace\RepositoryHandlerInterface
+   *   A repository handler plugin object.
    */
-  public function getRepositoryHandlerPlugin();
+  public function getRepositoryHandler();
 
   /**
    * Determines whether the workspace is the default one or not.

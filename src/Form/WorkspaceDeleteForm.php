@@ -13,11 +13,18 @@ use Drupal\Core\Form\FormStateInterface;
 class WorkspaceDeleteForm extends ContentEntityDeleteForm {
 
   /**
+   * The workspace entity.
+   *
+   * @var \Drupal\workspace\WorkspaceInterface
+   */
+  protected $entity;
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
-    $source_rev_diff = $this->entity->getRepositoryHandlerPlugin()->getSourceRevisionDifference();
+    $source_rev_diff = $this->entity->getRepositoryHandler()->getSourceRevisionDifference();
     $items = [];
     foreach ($source_rev_diff as $entity_type_id => $revision_ids) {
       $label = $this->entityTypeManager->getDefinition($entity_type_id)->getLabel();

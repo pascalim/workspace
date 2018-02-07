@@ -17,11 +17,6 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface RepositoryHandlerInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
 
   /**
-   * Default empty value for repository handler fields.
-   */
-  const EMPTY_VALUE = '_none';
-
-  /**
    * Indicate that an item has been updated both on the source and the target.
    *
    * @var int

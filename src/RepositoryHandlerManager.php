@@ -2,20 +2,20 @@
 
 namespace Drupal\workspace;
 
-use Drupal\Component\Plugin\CategorizingPluginManagerInterface;
+use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 use Drupal\Core\Plugin\CategorizingPluginManagerTrait;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
- * Provides a Repository Handler Manager for Repository Handlers.
+ * Provides a plugin manager for Repository Handlers.
  *
  * @see \Drupal\workspace\Annotation\RepositoryHandler
  * @see \Drupal\workspace\RepositoryHandlerInterface
  * @see plugin_api
  */
-class RepositoryHandlerManager extends DefaultPluginManager implements CategorizingPluginManagerInterface {
+class RepositoryHandlerManager extends DefaultPluginManager implements RepositoryHandlerManagerInterface, FallbackPluginManagerInterface {
 
   use CategorizingPluginManagerTrait;
 
@@ -42,6 +42,25 @@ class RepositoryHandlerManager extends DefaultPluginManager implements Categoriz
   public function processDefinition(&$definition, $plugin_id) {
     parent::processDefinition($definition, $plugin_id);
     $this->processDefinitionCategory($definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromWorkspace(WorkspaceInterface $workspace) {
+    $target = $workspace->target->value;
+    $configuration = [
+      'source' => $workspace->id(),
+      'target' => $target,
+    ];
+    return $this->createInstance($target, $configuration);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFallbackPluginId($plugin_id, array $configuration = []) {
+    return 'null';
   }
 
 }

@@ -175,7 +175,10 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     // If the current user doesn't have access to view the workspace, they
     // shouldn't be allowed to switch to it.
     if (!$workspace->access('view') && !$workspace->isDefaultWorkspace()) {
-      $this->logger->error('Denied access to view workspace %workspace_label', ['%workspace_label' => $workspace->label()]);
+      $this->logger->error('Denied access to view workspace %workspace_label for user %uid', [
+        '%workspace_label' => $workspace->label(),
+        '%uid' => $this->currentUser->id(),
+      ]);
       throw new WorkspaceAccessException('The user does not have permission to view that workspace.');
     }
 

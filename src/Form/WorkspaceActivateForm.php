@@ -5,6 +5,7 @@ namespace Drupal\workspace\Form;
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\workspace\WorkspaceAccessException;
 use Drupal\workspace\WorkspaceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -105,12 +106,11 @@ class WorkspaceActivateForm extends EntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
       $this->workspaceManager->setActiveWorkspace($this->entity);
-      $this->messenger->addMessage($this->t("@workspace is now the active workspace.", ['@workspace' => $this->entity->label()]));
+      $this->messenger->addMessage($this->t('%workspace_label is now the active workspace.', ['%workspace_label' => $this->entity->label()]));
       $form_state->setRedirectUrl($this->entity->toUrl('collection'));
     }
-    catch (\Exception $e) {
-      watchdog_exception('workspace', $e);
-      $this->messenger->addError($e->getMessage());
+    catch (WorkspaceAccessException $e) {
+      $this->messenger->addError($this->t('You do not have access to activate the %workspace_label workspace.', ['%workspace_label' => $this->entity->label()]));
     }
   }
 
