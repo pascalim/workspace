@@ -22,7 +22,7 @@ class WorkspaceInternalResourceTest extends KernelTestBase {
   /**
    * Tests enabling workspace associations for REST throws an exception.
    *
-   * @see workspace_rest_resource_alter()
+   * @see \Drupal\workspace\Entity\WorkspaceAssociation
    */
   public function testCreateWorkspaceAssociationResource() {
     $this->setExpectedException(PluginNotFoundException::class, 'The "entity:workspace_association" plugin does not exist.');

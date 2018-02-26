@@ -24,6 +24,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   },
  *   base_table = "workspace_association",
  *   revision_table = "workspace_association_revision",
+ *   internal = TRUE,
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",

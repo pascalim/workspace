@@ -119,15 +119,6 @@ function workspace_views_query_alter(ViewExecutable $view, QueryPluginBase $quer
 }
 
 /**
- * Implements hook_rest_resource_alter().
- */
-function workspace_rest_resource_alter(&$definitions) {
-  // WorkspaceAssociation is an internal entity types, therefore it should not
-  // be exposed via REST.
-  unset($definitions['entity:workspace_association']);
-}
-
-/**
  * Implements hook_cron().
  */
 function workspace_cron() {
