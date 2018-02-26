@@ -128,11 +128,6 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
           'value' => $this->entity->uuid()
         ],
       ],
-      'revision_default' => [
-        [
-          'value' => TRUE,
-        ],
-      ],
     ];
   }
 
