@@ -5,7 +5,6 @@ namespace Drupal\workspace;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\workspace\Entity\WorkspaceAssociation;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -60,8 +59,7 @@ class EntityOperations implements ContainerInjectionInterface {
   public function entityLoad(array &$entities, $entity_type_id) {
     // Only run if the entity type can belong to a workspace and we are in a
     // non-default workspace.
-    if (!$this->workspaceManager->entityTypeCanBelongToWorkspaces($this->entityTypeManager->getDefinition($entity_type_id))
-       || (($active_workspace = $this->workspaceManager->getActiveWorkspace()) && $active_workspace->isDefaultWorkspace())) {
+    if (!$this->workspaceManager->shouldAlterOperations($this->entityTypeManager->getDefinition($entity_type_id))) {
       return;
     }
 
@@ -78,7 +76,7 @@ class EntityOperations implements ContainerInjectionInterface {
       ->groupBy('content_entity_id')
       ->condition('content_entity_type_id', $entity_type_id)
       ->condition('content_entity_id', $entity_ids, 'IN')
-      ->condition('workspace', $active_workspace->id())
+      ->condition('workspace', $this->workspaceManager->getActiveWorkspace()->id())
       ->execute();
 
     // Since hook_entity_load() is called on both regular entity load as well as
@@ -88,11 +86,9 @@ class EntityOperations implements ContainerInjectionInterface {
     // @todo This recursion protection should be removed when
     //   https://www.drupal.org/project/drupal/issues/2928888 is resolved.
     if ($results) {
-      foreach ($results as $key => $result) {
-        if ($entities[$result['content_entity_id']]->getRevisionId() == $result[$max_revision_id]) {
-          unset($results[$key]);
-        }
-      }
+      $results = array_filter($results, function ($result) use ($entities, $max_revision_id) {
+        return $entities[$result['content_entity_id']]->getRevisionId() != $result[$max_revision_id];
+      });
     }
 
     if ($results) {
@@ -120,8 +116,7 @@ class EntityOperations implements ContainerInjectionInterface {
     /** @var \Drupal\Core\Entity\RevisionableInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
     // Only run if the entity type can belong to a workspace and we are in a
     // non-default workspace.
-    if (!$this->workspaceManager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-       || $this->workspaceManager->getActiveWorkspace()->isDefaultWorkspace()) {
+    if (!$this->workspaceManager->shouldAlterOperations($entity->getEntityType())) {
       return;
     }
 
@@ -162,15 +157,16 @@ class EntityOperations implements ContainerInjectionInterface {
     /** @var \Drupal\Core\Entity\RevisionableInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
     // Only run if the entity type can belong to a workspace and we are in a
     // non-default workspace.
-    if (!$this->workspaceManager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-       || $this->workspaceManager->getActiveWorkspace()->isDefaultWorkspace()) {
+    if (!$this->workspaceManager->shouldAlterOperations($entity->getEntityType())) {
       return;
     }
 
     $this->trackEntity($entity);
 
     // Handle the case when a new published entity was created in a non-default
-    // workspace and create a published pending revision for it.
+    // workspace and create a published pending revision for it. This does not
+    // cause an infinite recursion with ::entityPresave() because at this point
+    // the entity is no longer new.
     if (isset($entity->_initialPublished)) {
       // Operate on a clone to avoid changing the entity prior to subsequent
       // hook_entity_insert() implementations.
@@ -192,8 +188,7 @@ class EntityOperations implements ContainerInjectionInterface {
   public function entityUpdate(EntityInterface $entity) {
     // Only run if the entity type can belong to a workspace and we are in a
     // non-default workspace.
-    if (!$this->workspaceManager->entityTypeCanBelongToWorkspaces($entity->getEntityType())
-       || $this->workspaceManager->getActiveWorkspace()->isDefaultWorkspace()) {
+    if (!$this->workspaceManager->shouldAlterOperations($entity->getEntityType())) {
       return;
     }
 
@@ -219,10 +214,9 @@ class EntityOperations implements ContainerInjectionInterface {
     /** @var \Drupal\Core\Entity\RevisionableInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
     // If the entity is not new, check if there's an existing
     // WorkspaceAssociation entity for it.
+    $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
     if (!$entity->isNew()) {
-      $workspace_associations = $this->entityTypeManager
-        ->getStorage('workspace_association')
-        ->loadByProperties([
+      $workspace_associations = $workspace_association_storage->loadByProperties([
           'content_entity_type_id' => $entity->getEntityTypeId(),
           'content_entity_id' => $entity->id(),
         ]);
@@ -237,7 +231,7 @@ class EntityOperations implements ContainerInjectionInterface {
       $workspace_association->setNewRevision(TRUE);
     }
     else {
-      $workspace_association = WorkspaceAssociation::create([
+      $workspace_association = $workspace_association_storage->create([
         'content_entity_type_id' => $entity->getEntityTypeId(),
         'content_entity_id' => $entity->id(),
       ]);

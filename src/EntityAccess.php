@@ -120,7 +120,7 @@ class EntityAccess implements ContainerInjectionInterface {
    */
   protected function bypassAccessResult(AccountInterface $account) {
     // This approach assumes that the current "global" active workspace is
-    // correct, ie, if you're "in" a given workspace then you get ALL THE PERMS
+    // correct, i.e. if you're "in" a given workspace then you get ALL THE PERMS
     // to ALL THE THINGS! That's why this is a dangerous permission.
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
@@ -149,7 +149,7 @@ class EntityAccess implements ContainerInjectionInterface {
   }
 
   /**
-   * Derives the delete permission for a specific workspace.
+   * Derives the "bypass entity access" permission for a specific workspace.
    *
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   The workspace from which to derive the permission.

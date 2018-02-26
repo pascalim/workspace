@@ -79,7 +79,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
       ->setRequired(TRUE)
       ->addConstraint('UniqueField')
       ->addConstraint('DeletedWorkspace')
-      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[a-z0-9_]*$/']]);
+      ->addPropertyConstraints('value', ['Regex' => ['pattern' => '/^[a-z0-9_]+$/']]);
 
     $fields['label'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Workspace name'))
@@ -151,8 +151,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public function setCreatedTime($created) {
-    $this->set('created', (int) $created);
-    return $this;
+    return $this->set('created', (int) $created);
   }
 
   /**
@@ -173,8 +172,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public function setOwner(UserInterface $account) {
-    $this->set('uid', $account->id());
-    return $this;
+    return $this->set('uid', $account->id());
   }
 
   /**
@@ -188,8 +186,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public function setOwnerId($uid) {
-    $this->set('uid', $uid);
-    return $this;
+    return $this->set('uid', $uid);
   }
 
   /**

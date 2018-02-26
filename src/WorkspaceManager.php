@@ -205,6 +205,13 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function shouldAlterOperations(EntityTypeInterface $entity_type) {
+    return $this->entityTypeCanBelongToWorkspaces($entity_type) && !$this->getActiveWorkspace()->isDefaultWorkspace();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function purgeDeletedWorkspacesBatch() {
     $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
     $batch_size = Settings::get('entity_update_batch_size', 50);
