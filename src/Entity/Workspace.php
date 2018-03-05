@@ -107,7 +107,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(new TranslatableMarkup('Created'))
-      ->setDescription(new TranslatableMarkup('The UNIX timestamp of when the workspace has been created.'));
+      ->setDescription(new TranslatableMarkup('The time that the workspaces was created.'));
 
     $fields['target'] = BaseFieldDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Target workspace'))

@@ -57,7 +57,7 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
   protected $workspaceAssociationStorage;
 
   /**
-   * Constructs a new DefaultRepositoryHandler.
+   * Constructs a new LiveRepositoryHandler.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.

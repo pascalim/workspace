@@ -21,7 +21,7 @@ class QueryFactory extends BaseQueryFactory {
   protected $workspaceManager;
 
   /**
-   * Constructs a SqlQueryFactory object.
+   * Constructs a QueryFactory object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection used by the entity query.

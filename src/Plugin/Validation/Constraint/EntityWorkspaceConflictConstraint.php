@@ -15,6 +15,11 @@ use Symfony\Component\Validator\Constraint;
  */
 class EntityWorkspaceConflictConstraint extends Constraint {
 
+  /**
+   * The default violation message.
+   *
+   * @var string
+   */
   public $message = 'The content is being edited in the %label workspace. As a result, your changes cannot be saved.';
 
 }

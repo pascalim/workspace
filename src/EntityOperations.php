@@ -120,8 +120,8 @@ class EntityOperations implements ContainerInjectionInterface {
       return;
     }
 
-    // Force a new revision if the entity is not replicating.
     if (!$entity->isNew() && !isset($entity->_isReplicating)) {
+      // Force a new revision if the entity is not replicating.
       $entity->setNewRevision(TRUE);
 
       // All entities in the non-default workspace are pending revisions,
