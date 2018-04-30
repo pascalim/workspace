@@ -54,10 +54,10 @@ use Drupal\workspace\WorkspaceManager;
  *   },
  *   links = {
  *     "add-form" = "/admin/config/workflow/workspace/add",
- *     "edit-form" = "/admin/config/workflow/workspace/{workspace}/edit",
- *     "delete-form" = "/admin/config/workflow/workspace/{workspace}/delete",
- *     "activate-form" = "/admin/config/workflow/workspace/{workspace}/activate",
- *     "deploy-form" = "/admin/config/workflow/workspace/{workspace}/deploy",
+ *     "edit-form" = "/admin/config/workflow/workspace/manage/{workspace}/edit",
+ *     "delete-form" = "/admin/config/workflow/workspace/manage/{workspace}/delete",
+ *     "activate-form" = "/admin/config/workflow/workspace/manage/{workspace}/activate",
+ *     "deploy-form" = "/admin/config/workflow/workspace/manage/{workspace}/deploy",
  *     "collection" = "/admin/config/workflow/workspace",
  *   },
  * )

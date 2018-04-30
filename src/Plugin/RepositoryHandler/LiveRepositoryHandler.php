@@ -120,6 +120,9 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
         foreach ($entity_revisions as $entity) {
           // When pushing workspace-specific revisions to the default workspace
           // (Live), we simply need to mark them as default revisions.
+          // @todo Remove this dynamic property once we have an API for
+          //   associating temporary data with an entity:
+          //   https://www.drupal.org/node/2896474.
           $entity->_isReplicating = TRUE;
           $entity->isDefaultRevision(TRUE);
           $entity->save();

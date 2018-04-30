@@ -7,7 +7,7 @@ entity.workspace.collection:
     _permission: 'administer workspaces+edit any workspace'
 
 entity.workspace.activate_form:
-  path: '/admin/config/workflow/workspace/{workspace}/activate'
+  path: '/admin/config/workflow/workspace/manage/{workspace}/activate'
   defaults:
     _entity_form: 'workspace.activate'
     _title: 'Activate Workspace'
@@ -17,7 +17,7 @@ entity.workspace.activate_form:
     _entity_access: 'workspace.view'
 
 entity.workspace.deploy_form:
-  path: '/admin/config/workflow/workspace/{workspace}/deploy'
+  path: '/admin/config/workflow/workspace/manage/{workspace}/deploy'
   defaults:
     _entity_form: 'workspace.deploy'
     _title: 'Deploy Workspace'

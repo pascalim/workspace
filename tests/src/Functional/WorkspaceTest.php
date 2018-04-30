@@ -84,7 +84,7 @@ class WorkspaceTest extends BrowserTestBase {
     $test_workspace = $storage->load('test_workspace');
     $this->assertEquals($this->editor1->id(), $test_workspace->getOwnerId());
 
-    $this->drupalPostForm('/admin/config/workflow/workspace/test_workspace/edit', [
+    $this->drupalPostForm('/admin/config/workflow/workspace/manage/test_workspace/edit', [
       'uid[0][target_id]' => $this->editor2->getUsername(),
     ], 'Save');
 

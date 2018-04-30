@@ -141,6 +141,8 @@ class EntityOperations implements ContainerInjectionInterface {
     if ($entity->isNew() && $entity->isPublished()) {
       // Keep track of the publishing status for workspace_entity_insert() and
       // unpublish the default revision.
+      // @todo Remove this dynamic property once we have an API for associating
+      //   temporary data with an entity: https://www.drupal.org/node/2896474.
       $entity->_initialPublished = TRUE;
       $entity->setUnpublished();
     }

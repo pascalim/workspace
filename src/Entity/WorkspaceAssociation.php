@@ -13,6 +13,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * @ContentEntityType(
  *   id = "workspace_association",
  *   label = @Translation("Workspace association"),
+ *   label_collection = @Translation("Workspace associations"),
  *   label_singular = @Translation("workspace association"),
  *   label_plural = @Translation("workspace associations"),
  *   label_count = @PluralTranslation(

@@ -41,7 +41,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $entity_list = $etm->getStorage('workspace')->loadByProperties(['label' => 'Bears']);
     $bears = current($entity_list);
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(403);
   }
 
@@ -65,7 +65,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // Now edit that same workspace; We should be able to do so.
     $bears = Workspace::load('bears');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
 
     $page = $this->getSession()->getPage();
@@ -82,10 +82,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->createWorkspaceThroughUi('Packers', 'packers');
     $packers = Workspace::load('packers');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$packers->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(403);
   }
 
@@ -109,7 +109,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     // Now edit that same workspace; We should be able to do so.
     $bears = Workspace::load('bears');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
 
     $page = $this->getSession()->getPage();
@@ -126,10 +126,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->createWorkspaceThroughUi('Packers', 'packers');
     $packers = Workspace::load('packers');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$packers->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/edit");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/edit");
     $this->assertSession()->statusCodeEquals(200);
   }
 
@@ -150,7 +150,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $bears = $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now try to delete that same workspace; We should be able to do so.
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/delete");
     $this->assertSession()->statusCodeEquals(200);
 
     // Now login as a different user and ensure they don't have edit access,
@@ -160,10 +160,10 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->drupalLogin($editor2);
     $packers = $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$packers->id()}/delete");
     $this->assertSession()->statusCodeEquals(200);
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/delete");
     $this->assertSession()->statusCodeEquals(403);
   }
 
@@ -184,7 +184,7 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $bears = $this->createWorkspaceThroughUi('Bears', 'bears');
 
     // Now edit that same workspace; We should be able to do so.
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/delete");
     $this->assertSession()->statusCodeEquals(200);
 
     // Now login as a different user and ensure they have delete access on both
@@ -194,15 +194,15 @@ class WorkspacePermissionsTest extends BrowserTestBase {
     $this->drupalLogin($admin);
     $packers = $this->createWorkspaceThroughUi('Packers', 'packers');
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$packers->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$packers->id()}/delete");
     $this->assertSession()->statusCodeEquals(200);
 
-    $this->drupalGet("/admin/config/workflow/workspace/{$bears->id()}/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/{$bears->id()}/delete");
     $this->assertSession()->statusCodeEquals(200);
 
     // Check that the default workspace can not be deleted, even by a user with
     // the "delete any workspace" permission.
-    $this->drupalGet("/admin/config/workflow/workspace/live/delete");
+    $this->drupalGet("/admin/config/workflow/workspace/manage/live/delete");
     $this->assertSession()->statusCodeEquals(403);
   }
 

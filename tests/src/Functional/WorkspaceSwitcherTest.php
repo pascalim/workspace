@@ -39,7 +39,7 @@ class WorkspaceSwitcherTest extends BrowserTestBase {
 
     $gravity = $this->createWorkspaceThroughUi('Gravity', 'gravity');
 
-    $this->drupalGet('/admin/config/workflow/workspace/' . $gravity->id() . '/activate');
+    $this->drupalGet('/admin/config/workflow/workspace/manage/' . $gravity->id() . '/activate');
 
     $this->assertSession()->statusCodeEquals(200);
     $page = $this->getSession()->getPage();
