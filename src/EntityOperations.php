@@ -71,6 +71,7 @@ class EntityOperations implements ContainerInjectionInterface {
     $results = $this->entityTypeManager
       ->getStorage('workspace_association')
       ->getAggregateQuery()
+      ->accessCheck(FALSE)
       ->allRevisions()
       ->aggregate('content_entity_revision_id', 'MAX', NULL, $max_revision_id)
       ->groupBy('content_entity_id')
@@ -167,6 +168,7 @@ class EntityOperations implements ContainerInjectionInterface {
     // workspace and create a published pending revision for it. This does not
     // cause an infinite recursion with ::entityPresave() because at this point
     // the entity is no longer new.
+    // @todo Better explain in https://www.drupal.org/node/2962764
     if (isset($entity->_initialPublished)) {
       // Operate on a clone to avoid changing the entity prior to subsequent
       // hook_entity_insert() implementations.
