@@ -82,8 +82,11 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
    * @return array
    *   A multidimensional array of revision identifiers, either the revision ID
    *   or the revision UUID, keyed by entity type IDs.
+   *
+   * @todo Update the return values to be only UUIDs and revision UUIDs in
+   *   https://www.drupal.org/node/2958752
    */
-  public function getTargetRevisionDifference();
+  public function getDifferringRevisionIdsOnTarget();
 
   /**
    * Gets the revision identifiers for items which have changed on the source.
@@ -91,7 +94,10 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
    * @return array
    *   A multidimensional array of revision identifiers, either the revision ID
    *   or the revision UUID, keyed by entity type IDs.
+   *
+   * @todo Update the return values to be only UUIDs and revision UUIDs in
+   *   https://www.drupal.org/node/2958752
    */
-  public function getSourceRevisionDifference();
+  public function getDifferringRevisionIdsOnSource();
 
 }

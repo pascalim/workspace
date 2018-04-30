@@ -47,7 +47,7 @@ function workspace_entity_type_build(array &$entity_types) {
  */
 function workspace_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   return \Drupal::service('class_resolver')
-    ->getInstanceFromDefinition(EntityTypeInfo::class)
+    ->getInstanceFromDefinition(EntityOperations::class)
     ->formAlter($form, $form_state, $form_id);
 }
 
@@ -171,7 +171,7 @@ function workspace_toolbar() {
     ],
     'tray' => [
       '#heading' => t('Workspaces'),
-      'workspaces' => workspace_renderable_links(),
+      'workspaces' => workspace_build_renderable_links(),
       'configure' => $configure_link,
     ],
     '#wrapper_attributes' => [
@@ -186,7 +186,7 @@ function workspace_toolbar() {
   // Add a special class to the wrapper if we are in the default workspace so we
   // can highlight it with a different color.
   if ($active_workspace->isDefaultWorkspace()) {
-    $items['workspace']['#wrapper_attributes']['class'][] = 'is-live';
+    $items['workspace']['#wrapper_attributes']['class'][] = 'is-default';
   }
 
   return $items;
@@ -198,7 +198,7 @@ function workspace_toolbar() {
  * @return array
  *   A render array containing links to the workspace activation form.
  */
-function workspace_renderable_links() {
+function workspace_build_renderable_links() {
   $entity_type_manager = \Drupal::entityTypeManager();
   /** @var \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository */
   $entity_repository = \Drupal::service('entity.repository');

@@ -18,7 +18,7 @@ interface WorkspaceManagerInterface {
    * @return bool
    *   TRUE if the entity type can belong to a workspace, FALSE otherwise.
    */
-  public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type);
+  public function isEntityTypeSupported(EntityTypeInterface $entity_type);
 
   /**
    * Returns an array of entity types that can belong to workspaces.

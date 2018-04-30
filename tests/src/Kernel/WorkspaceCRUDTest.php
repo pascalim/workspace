@@ -113,8 +113,8 @@ class WorkspaceCRUDTest extends KernelTestBase {
     }
 
     // The workspace should have 10 associated node revisions, 5 for each node.
-    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_1->id(), TRUE, FALSE);
-    $this->assertCount(10, $associated_revisions);
+    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_1->id(), TRUE);
+    $this->assertCount(10, $associated_revisions['node']);
 
     // Check that we are allowed to delete the workspace.
     $this->assertTrue($workspace_1->access('delete', $admin));
@@ -123,7 +123,7 @@ class WorkspaceCRUDTest extends KernelTestBase {
     // entities and all the node revisions have been deleted as well.
     $workspace_1->delete();
 
-    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_1->id(), TRUE, FALSE);
+    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_1->id(), TRUE);
     $this->assertCount(0, $associated_revisions);
     $node_revision_count = $node_storage
       ->getQuery()
@@ -148,15 +148,15 @@ class WorkspaceCRUDTest extends KernelTestBase {
     }
 
     // The workspace should have 60 associated node revisions.
-    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE, FALSE);
-    $this->assertCount(60, $associated_revisions);
+    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE);
+    $this->assertCount(60, $associated_revisions['node']);
 
     // Delete the workspace and check that we still have 10 revision left to
     // delete.
     $workspace_2->delete();
 
-    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE, FALSE);
-    $this->assertCount(10, $associated_revisions);
+    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE);
+    $this->assertCount(10, $associated_revisions['node']);
 
     $workspace_deleted = \Drupal::state()->get('workspace.deleted');
     $this->assertCount(1, $workspace_deleted);
@@ -175,7 +175,7 @@ class WorkspaceCRUDTest extends KernelTestBase {
     // from the "workspace.delete" state entry.
     \Drupal::service('cron')->run();
 
-    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE, FALSE);
+    $associated_revisions = $workspace_association_storage->getTrackedEntities($workspace_2->id(), TRUE);
     $this->assertCount(0, $associated_revisions);
     $node_revision_count = $node_storage
       ->getQuery()

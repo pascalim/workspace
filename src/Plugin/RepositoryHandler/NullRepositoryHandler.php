@@ -40,14 +40,14 @@ class NullRepositoryHandler extends PluginBase implements RepositoryHandlerInter
   /**
    * {@inheritdoc}
    */
-  public function getTargetRevisionDifference() {
+  public function getDifferringRevisionIdsOnTarget() {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getSourceRevisionDifference() {
+  public function getDifferringRevisionIdsOnSource() {
     return [];
   }
 

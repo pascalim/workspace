@@ -113,10 +113,12 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
 
     $transaction = $this->database->startTransaction();
     try {
-      foreach ($this->getSourceRevisionDifference() as $entity_type_id => $revision_difference) {
+      // @todo Handle the publishing of a workspace with a batch operation in
+      //   https://www.drupal.org/node/2958752.
+      foreach ($this->getDifferringRevisionIdsOnSource() as $entity_type_id => $revision_difference) {
         $entity_revisions = $this->entityTypeManager->getStorage($entity_type_id)
           ->loadMultipleRevisions(array_keys($revision_difference));
-        /** @var \Drupal\Core\Entity\ContentEntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
+        /** @var \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface $entity */
         foreach ($entity_revisions as $entity) {
           // When pushing workspace-specific revisions to the default workspace
           // (Live), we simply need to mark them as default revisions.
@@ -160,7 +162,7 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
   /**
    * {@inheritdoc}
    */
-  public function getTargetRevisionDifference() {
+  public function getDifferringRevisionIdsOnTarget() {
     $target_revision_difference = [];
 
     $tracked_entities = $this->workspaceAssociationStorage->getTrackedEntities($this->source);
@@ -191,7 +193,7 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
   /**
    * {@inheritdoc}
    */
-  public function getSourceRevisionDifference() {
+  public function getDifferringRevisionIdsOnSource() {
     // Get the Workspace association revisions which haven't been pushed yet.
     return $this->workspaceAssociationStorage->getTrackedEntities($this->source);
   }

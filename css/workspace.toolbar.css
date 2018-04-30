@@ -11,7 +11,7 @@
 [dir="rtl"] .toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
   float: left;
 }
-.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab.is-live {
+.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab.is-default {
   background-color: #77b259;
 }
 

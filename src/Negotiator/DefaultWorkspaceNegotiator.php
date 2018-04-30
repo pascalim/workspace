@@ -5,7 +5,6 @@ namespace Drupal\workspace\Negotiator;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\workspace\WorkspaceInterface;
-use Drupal\workspace\WorkspaceManager;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -50,8 +49,8 @@ class DefaultWorkspaceNegotiator implements WorkspaceNegotiatorInterface {
   public function getActiveWorkspace(Request $request) {
     if (!$this->defaultWorkspace) {
       $default_workspace = $this->workspaceStorage->create([
-        'id' => WorkspaceManager::DEFAULT_WORKSPACE,
-        'label' => Unicode::ucwords(WorkspaceManager::DEFAULT_WORKSPACE),
+        'id' => WorkspaceInterface::DEFAULT_WORKSPACE,
+        'label' => Unicode::ucwords(WorkspaceInterface::DEFAULT_WORKSPACE),
         'target' => '',
       ]);
       $default_workspace->enforceIsNew(FALSE);

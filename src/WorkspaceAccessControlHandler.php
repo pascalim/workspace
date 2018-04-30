@@ -34,7 +34,7 @@ class WorkspaceAccessControlHandler extends EntityAccessControlHandler {
 
     $permission_operation = $operation === 'update' ? 'edit' : $operation;
 
-    // Check if the user has permission to access any workspace at all.
+    // Check if the user has permission to access all workspaces.
     $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' any workspace');
 
     // Check if it's their own workspace, and they have permission to access

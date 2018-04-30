@@ -27,7 +27,7 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
   /**
    * {@inheritdoc}
    */
-  public function getTrackedEntities($workspace_id, $all_revisions = FALSE, $group = TRUE) {
+  public function getTrackedEntities($workspace_id, $all_revisions = FALSE) {
     $table = $all_revisions ? $this->getRevisionTable() : $this->getBaseTable();
     $query = $this->database->select($table, 'base_table');
     $query
@@ -37,16 +37,7 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
 
     $tracked_revisions = [];
     foreach ($query->execute() as $record) {
-      if ($group) {
-        $tracked_revisions[$record->content_entity_type_id][$record->content_entity_revision_id] = $record->content_entity_id;
-      }
-      else {
-        $tracked_revisions[] = [
-          'entity_type_id' => $record->content_entity_type_id,
-          'revision_id' => $record->content_entity_revision_id,
-          'entity_id' => $record->content_entity_id,
-        ];
-      }
+      $tracked_revisions[$record->content_entity_type_id][$record->content_entity_revision_id] = $record->content_entity_id;
     }
 
     return $tracked_revisions;

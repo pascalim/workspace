@@ -21,11 +21,6 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   use StringTranslationTrait;
 
   /**
-   * The default workspace ID.
-   */
-  const DEFAULT_WORKSPACE = 'live';
-
-  /**
    * An array of entity type IDs that can not belong to a workspace.
    *
    * By default, only entity types which are revisionable and publishable can
@@ -125,7 +120,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityTypeCanBelongToWorkspaces(EntityTypeInterface $entity_type) {
+  public function isEntityTypeSupported(EntityTypeInterface $entity_type) {
     if (!isset($this->blacklist[$entity_type->id()])
       && $entity_type->entityClassImplements(EntityPublishedInterface::class)
       && $entity_type->isRevisionable()) {
@@ -141,7 +136,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   public function getSupportedEntityTypes() {
     $entity_types = [];
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($this->entityTypeCanBelongToWorkspaces($entity_type)) {
+      if ($this->isEntityTypeSupported($entity_type)) {
         $entity_types[$entity_type_id] = $entity_type;
       }
     }
@@ -206,7 +201,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function shouldAlterOperations(EntityTypeInterface $entity_type) {
-    return $this->entityTypeCanBelongToWorkspaces($entity_type) && !$this->getActiveWorkspace()->isDefaultWorkspace();
+    return $this->isEntityTypeSupported($entity_type) && !$this->getActiveWorkspace()->isDefaultWorkspace();
   }
 
   /**

@@ -90,7 +90,7 @@ abstract class WorkspaceResourceTestBase extends EntityResourceTestBase {
     $author = User::load($this->entity->getOwnerId());
     return [
       'created' => [
-        $this->formatExpectedTimestampItemValues((int) $this->entity->getStartTime()),
+        $this->formatExpectedTimestampItemValues((int) $this->entity->getCreatedTime()),
       ],
       'changed' => [
         $this->formatExpectedTimestampItemValues($this->entity->getChangedTime()),

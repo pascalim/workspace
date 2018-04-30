@@ -10,7 +10,6 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\user\UserInterface;
 use Drupal\workspace\WorkspaceInterface;
-use Drupal\workspace\WorkspaceManager;
 
 /**
  * The workspace entity class.
@@ -144,7 +143,14 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    * {@inheritdoc}
    */
   public function isDefaultWorkspace() {
-    return $this->id() === WorkspaceManager::DEFAULT_WORKSPACE;
+    return $this->id() === static::DEFAULT_WORKSPACE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedTime() {
+    return $this->get('created')->value;
   }
 
   /**
@@ -152,13 +158,6 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
    */
   public function setCreatedTime($created) {
     return $this->set('created', (int) $created);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStartTime() {
-    return $this->get('created')->value;
   }
 
   /**
@@ -199,7 +198,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
     // be purged on cron.
     $state = \Drupal::state();
     $deleted_workspace_ids = $state->get('workspace.deleted', []);
-    unset($entities[WorkspaceManager::DEFAULT_WORKSPACE]);
+    unset($entities[static::DEFAULT_WORKSPACE]);
     $deleted_workspace_ids += array_combine(array_keys($entities), array_keys($entities));
     $state->set('workspace.deleted', $deleted_workspace_ids);
 

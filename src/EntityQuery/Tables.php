@@ -114,7 +114,7 @@ class Tables extends BaseTables {
     $next_base_table_alias = parent::addNextBaseTable($entity_type, $table, $sql_column, $field_storage);
 
     $active_workspace_id = $this->sqlQuery->getMetaData('active_workspace_id');
-    if ($active_workspace_id && $this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type)) {
+    if ($active_workspace_id && $this->workspaceManager->isEntityTypeSupported($entity_type)) {
       $this->addWorkspaceAssociationJoin($entity_type->id(), $next_base_table_alias, $active_workspace_id);
     }
 

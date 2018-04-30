@@ -120,8 +120,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
 
     $entity_type_definitions = $this->entityTypeManager->getDefinitions();
     foreach ($entity_type_ids as $entity_type_id) {
-      if ($this->workspaceManager->entityTypeCanBelongToWorkspaces($entity_type_definitions[$entity_type_id])) {
-        $this->alterQueryForEntityType($view, $query, $entity_type_definitions[$entity_type_id]);
+      if ($this->workspaceManager->isEntityTypeSupported($entity_type_definitions[$entity_type_id])) {
+        $this->alterQueryForEntityType($query, $entity_type_definitions[$entity_type_id]);
       }
     }
   }
@@ -129,16 +129,15 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
   /**
    * Alters the entity type tables for a Views query.
    *
-   * @param \Drupal\views\ViewExecutable $view
-   *   The view object about to be processed.
+   * This should only be called after determining that this entity type is
+   * involved in the query, and that a non-default workspace is in use.
+   *
    * @param \Drupal\views\Plugin\views\query\Sql $query
    *   The query plugin object for the query.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    */
-  protected function alterQueryForEntityType(ViewExecutable $view, Sql $query, EntityTypeInterface $entity_type) {
-    // This is only called after we determined that this entity type is involved
-    // in the query, and that a non-default workspace is in use.
+  protected function alterQueryForEntityType(Sql $query, EntityTypeInterface $entity_type) {
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->entityTypeManager->getStorage($entity_type->id())->getTableMapping();
     $field_storage_definitions = $this->entityFieldManager->getFieldStorageDefinitions($entity_type->id());
@@ -239,8 +238,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     // Now we have to go through our where clauses and modify any of our fields.
     foreach ($query->where as &$clauses) {
       foreach ($clauses['conditions'] as &$where_info) {
-        // Build a matrix of our possible relationships against fields we need to
-        // switch.
+        // Build a matrix of our possible relationships against fields we need
+        // to switch.
         foreach ($relationships as $relationship) {
           foreach ($revisionable_fields as $field) {
             if (is_string($where_info['field']) && $where_info['field'] == "$relationship.$field") {
@@ -255,8 +254,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
       }
     }
 
-    // @todo Handle $query->orderby, $query->groupby, $query->having,
-    //   $query->count_field.
+    // @todo Handle $query->orderby, $query->groupby, $query->having and
+    //   $query->count_field in https://www.drupal.org/node/2968165.
   }
 
   /**
@@ -318,8 +317,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
    *   The alias of the relationship.
    */
   protected function ensureRevisionTable(EntityTypeInterface $entity_type, Sql $query, $relationship) {
-    // Get the alias for the 'workspace_association' table we chain off of in the
-    // COALESCE.
+    // Get the alias for the 'workspace_association' table we chain off of in
+    // the COALESCE.
     $workspace_association_table = $this->ensureWorkspaceAssociationTable($entity_type->id(), $query, $relationship);
 
     // Get the name of the revision table and revision key.
@@ -333,7 +332,8 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
       $alias = $query->tables[$relationship][$base_revision_table]['alias'];
       if (isset($table_queue[$alias]['join']->field) && $table_queue[$alias]['join']->field == $revision_field) {
         // If this table previously existed, but was not added by us, we need
-        // to modify the join and make sure that 'workspace_association' comes first.
+        // to modify the join and make sure that 'workspace_association' comes
+        // first.
         if (empty($table_queue[$alias]['join']->workspace_adjusted)) {
           $table_queue[$alias]['join'] = $this->getRevisionTableJoin($relationship, $base_revision_table, $revision_field, $workspace_association_table);
           // We also have to ensure that our 'workspace_association' comes before
@@ -389,8 +389,7 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
    * Because Workspace chains possibly pre-existing tables onto the
    * 'workspace_association' table, we have to ensure that the
    * 'workspace_association' table appears in the query before the alias it's
-   * chained on or the SQL is invalid. This uses array_slice() to reconstruct
-   * the table queue of the query.
+   * chained on or the SQL is invalid.
    *
    * @param \Drupal\views\Plugin\views\query\Sql $query
    *   The SQL query object.

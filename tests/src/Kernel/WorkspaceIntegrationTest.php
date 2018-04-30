@@ -356,14 +356,14 @@ class WorkspaceIntegrationTest extends KernelTestBase {
         7 => 4,
       ],
     ];
-    $this->assertEquals($expected, $stage_repository_handler->getSourceRevisionDifference());
+    $this->assertEquals($expected, $stage_repository_handler->getDifferringRevisionIdsOnSource());
 
     $stage_repository_handler->push();
     $this->assertWorkspaceStatus($test_scenarios['push_stage_to_live'], 'node');
     $this->assertWorkspaceAssociation($expected_workspace_association['push_stage_to_live'], 'node');
 
     // Check that there are no more revisions to push.
-    $this->assertEmpty($stage_repository_handler->getSourceRevisionDifference());
+    $this->assertEmpty($stage_repository_handler->getDifferringRevisionIdsOnSource());
   }
 
   /**
@@ -520,7 +520,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $published_key = $entity_keys['published'];
 
     // Check \Drupal\Core\Entity\EntityStorageInterface::loadMultiple().
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+    /** @var \Drupal\Core\Entity\EntityInterface[]|\Drupal\Core\Entity\RevisionableInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
     $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadMultiple(array_column($expected_default_revisions, $id_key));
     foreach ($expected_default_revisions as $expected_default_revision) {
       $entity_id = $expected_default_revision[$id_key];
@@ -531,7 +531,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
 
     // Check \Drupal\Core\Entity\EntityStorageInterface::loadUnchanged().
     foreach ($expected_default_revisions as $expected_default_revision) {
-      /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+      /** @var \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\RevisionableInterface|\Drupal\Core\Entity\EntityPublishedInterface $entity */
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadUnchanged($expected_default_revision[$id_key]);
       $this->assertEquals($expected_default_revision[$revision_key], $entity->getRevisionId());
       $this->assertEquals($expected_default_revision[$label_key], $entity->label());
@@ -554,7 +554,7 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     $label_key = $entity_keys['label'];
     $published_key = $entity_keys['published'];
 
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
+    /** @var \Drupal\Core\Entity\EntityInterface[]|\Drupal\Core\Entity\RevisionableInterface[]|\Drupal\Core\Entity\EntityPublishedInterface[] $entities */
     $entities = $this->entityTypeManager->getStorage($entity_type_id)->loadMultipleRevisions(array_column($expected_values, $revision_key));
     foreach ($expected_values as $expected_revision) {
       $revision_id = $expected_revision[$revision_key];
@@ -629,11 +629,9 @@ class WorkspaceIntegrationTest extends KernelTestBase {
     /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
     $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
     foreach ($expected as $workspace_id => $expected_tracked_revision_ids) {
-      $tracked_entities = $workspace_association_storage->getTrackedEntities($workspace_id, TRUE, FALSE);
-      $tracked_entities = array_filter($tracked_entities, function ($tracked_entity) use ($entity_type_id) {
-        return $tracked_entity['entity_type_id'] === $entity_type_id;
-      });
-      $this->assertEquals($expected_tracked_revision_ids, array_column($tracked_entities, 'revision_id'));
+      $tracked_entities = $workspace_association_storage->getTrackedEntities($workspace_id, TRUE);
+      $tracked_revision_ids = isset($tracked_entities[$entity_type_id]) ? $tracked_entities[$entity_type_id] : [];
+      $this->assertEquals($expected_tracked_revision_ids, array_keys($tracked_revision_ids));
     }
   }
 

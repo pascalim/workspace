@@ -6,6 +6,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\workspace\Form\WorkspaceSwitcherForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -71,7 +72,7 @@ class WorkspaceSwitcherBlock extends BlockBase implements ContainerFactoryPlugin
    */
   public function build() {
     $build = [
-      'form' => $this->formBuilder->getForm('Drupal\workspace\Form\WorkspaceSwitcherForm'),
+      'form' => $this->formBuilder->getForm(WorkspaceSwitcherForm::class),
       '#cache' => [
         'contexts' => $this->entityTypeManager->getDefinition('workspace')->getListCacheContexts(),
         'tags' => $this->entityTypeManager->getDefinition('workspace')->getListCacheTags(),

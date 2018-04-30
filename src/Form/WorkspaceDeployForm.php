@@ -73,7 +73,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $form['#title'] = $this->t('Deploy %source_label workspace', $args);
 
     // List the changes that can be pushed.
-    if ($source_rev_diff = $repository_handler->getSourceRevisionDifference()) {
+    if ($source_rev_diff = $repository_handler->getDifferringRevisionIdsOnSource()) {
       $total_count = count($source_rev_diff, COUNT_RECURSIVE) - count($source_rev_diff);
       $form['deploy'] = [
         '#theme' => 'item_list',
@@ -87,7 +87,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
     }
 
     // List the changes that can be pulled.
-    if ($target_rev_diff = $repository_handler->getTargetRevisionDifference()) {
+    if ($target_rev_diff = $repository_handler->getDifferringRevisionIdsOnTarget()) {
       $total_count = count($target_rev_diff, COUNT_RECURSIVE) - count($target_rev_diff);
       $form['refresh'] = [
         '#theme' => 'item_list',
@@ -117,11 +117,11 @@ class WorkspaceDeployForm extends ContentEntityForm {
     $elements = parent::actions($form, $form_state);
     unset($elements['delete']);
 
-    $repositoy_handler = $this->entity->getRepositoryHandler();
+    $repository_handler = $this->entity->getRepositoryHandler();
 
     if (isset($form['deploy'])) {
       $total_count = $form['deploy']['#total_count'];
-      $elements['submit']['#value'] = $this->formatPlural($total_count, 'Deploy @count item to @target', 'Deploy @count items to @target', ['@target' => $repositoy_handler->getLabel()]);
+      $elements['submit']['#value'] = $this->formatPlural($total_count, 'Deploy @count item to @target', 'Deploy @count items to @target', ['@target' => $repository_handler->getLabel()]);
       $elements['submit']['#submit'] = ['::submitForm', '::deploy'];
     }
     else {
@@ -135,7 +135,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
       $total_count = $form['refresh']['#total_count'];
       $elements['refresh'] = [
         '#type' => 'submit',
-        '#value' => $this->formatPlural($total_count, 'Refresh @count item from @target', 'Refresh @count items from @target', ['@target' => $repositoy_handler->getLabel()]),
+        '#value' => $this->formatPlural($total_count, 'Refresh @count item from @target', 'Refresh @count items from @target', ['@target' => $repository_handler->getLabel()]),
         '#submit' => ['::submitForm', '::refresh'],
       ];
     }

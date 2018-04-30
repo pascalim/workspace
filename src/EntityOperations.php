@@ -3,8 +3,11 @@
 namespace Drupal\workspace;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -13,6 +16,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @internal
  */
 class EntityOperations implements ContainerInjectionInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The entity type manager service.
@@ -197,7 +202,7 @@ class EntityOperations implements ContainerInjectionInterface {
     }
 
     // Only track new revisions.
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    /** @var \Drupal\Core\Entity\RevisionableInterface $entity */
     if ($entity->getLoadedRevisionId() != $entity->getRevisionId()) {
       $this->trackEntity($entity);
     }
@@ -221,9 +226,9 @@ class EntityOperations implements ContainerInjectionInterface {
     $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
     if (!$entity->isNew()) {
       $workspace_associations = $workspace_association_storage->loadByProperties([
-          'content_entity_type_id' => $entity->getEntityTypeId(),
-          'content_entity_id' => $entity->id(),
-        ]);
+        'content_entity_type_id' => $entity->getEntityTypeId(),
+        'content_entity_id' => $entity->id(),
+      ]);
 
       /** @var \Drupal\Core\Entity\ContentEntityInterface $workspace_association */
       $workspace_association = reset($workspace_associations);
@@ -247,6 +252,44 @@ class EntityOperations implements ContainerInjectionInterface {
 
     // Save without updating the tracked content entity.
     $workspace_association->save();
+  }
+
+  /**
+   * Alters entity forms to disallow concurrent editing in multiple workspaces.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   * @param string $form_id
+   *   The form ID.
+   *
+   * @see hook_form_alter()
+   */
+  public function formAlter(array &$form, FormStateInterface $form_state, $form_id) {
+    $form_object = $form_state->getFormObject();
+    if (!$form_object instanceof EntityFormInterface) {
+      return;
+    }
+
+    $entity = $form_object->getEntity();
+    if (!$this->workspaceManager->isEntityTypeSupported($entity->getEntityType())) {
+      return;
+    }
+
+    /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
+    $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
+    if ($workspace_ids = $workspace_association_storage->isEntityTracked($entity)) {
+      // An entity can only be edited in one workspace.
+      $workspace_id = reset($workspace_ids);
+
+      if ($workspace_id !== $this->workspaceManager->getActiveWorkspace()->id()) {
+        $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+
+        $form['#markup'] = $this->t('The content is being edited in the %label workspace.', ['%label' => $workspace->label()]);
+        $form['#access'] = FALSE;
+      }
+    }
   }
 
 }
