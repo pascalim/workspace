@@ -4,14 +4,14 @@
  */
 
 /* Tab appearance. */
-.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
+.toolbar .toolbar-bar .workspace-toolbar-tab {
   float: right; /* LTR */
   background-color: #e09600;
 }
-[dir="rtl"] .toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab {
+[dir="rtl"] .toolbar .toolbar-bar .workspace-toolbar-tab {
   float: left;
 }
-.toolbar .toolbar-bar .workspace-toolbar-tab.toolbar-tab.is-default {
+.toolbar .toolbar-bar .workspace-toolbar-tab--is-default {
   background-color: #77b259;
 }
 
@@ -40,15 +40,15 @@
 
 /* Individual workspace links */
 .toolbar-horizontal .toolbar-tray .toolbar-menu li + li {
-  border-left: 1px solid #dddddd; /* LTR */
+  border-left: 1px solid #ddd; /* LTR */
 }
 [dir="rtl"] .toolbar-horizontal .toolbar-tray .toolbar-menu li + li {
   border-left: 0 none;
-  border-right: 1px solid #dddddd;
+  border-right: 1px solid #ddd;
 }
 .toolbar-horizontal .toolbar-tray .toolbar-menu li:last-child {
-  border-right: 1px solid #dddddd; /* LTR */
+  border-right: 1px solid #ddd;
 }
 [dir="rtl"] .toolbar-horizontal .toolbar-tray .toolbar-menu li:last-child {
-  border-left: 1px solid #dddddd;
+  border-left: 1px solid #ddd;
 }

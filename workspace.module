@@ -186,7 +186,7 @@ function workspace_toolbar() {
   // Add a special class to the wrapper if we are in the default workspace so we
   // can highlight it with a different color.
   if ($active_workspace->isDefaultWorkspace()) {
-    $items['workspace']['#wrapper_attributes']['class'][] = 'is-default';
+    $items['workspace']['#wrapper_attributes']['class'][] = 'workspace-toolbar-tab--is-default';
   }
 
   return $items;
