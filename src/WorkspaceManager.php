@@ -223,14 +223,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     // Get the first deleted workspace from the list and delete the revisions
     // associated with it, along with the workspace_association entries.
     $workspace_id = reset($deleted_workspace_ids);
-    $workspace_association_ids = $workspace_association_storage
-      ->getQuery()
-      ->allRevisions()
-      ->accessCheck(FALSE)
-      ->condition('workspace', $workspace_id)
-      ->sort('revision_id', 'ASC')
-      ->range(0, $batch_size)
-      ->execute();
+    $workspace_association_ids = $this->getWorkspaceAssociationRevisionsToPurge($workspace_id, $batch_size);
 
     if ($workspace_association_ids) {
       $workspace_associations = $workspace_association_storage->loadMultipleRevisions(array_keys($workspace_association_ids));
@@ -255,12 +248,36 @@ class WorkspaceManager implements WorkspaceManagerInterface {
         }
       }
     }
-    else {
-      // Remove the deleted workspace ID entry from state if all its associated
-      // entities have been purged.
+
+    // The purging operation above might have taken a long time, so we need to
+    // request a fresh list of workspace association IDs. If it is empty, we can
+    // go ahead and remove the deleted workspace ID entry from state.
+    if (!$this->getWorkspaceAssociationRevisionsToPurge($workspace_id, $batch_size)) {
       unset($deleted_workspace_ids[$workspace_id]);
       $this->state->set('workspace.deleted', $deleted_workspace_ids);
     }
+  }
+
+  /**
+   * Gets a list of workspace association IDs to purge.
+   *
+   * @param string $workspace_id
+   *   The ID of the workspace.
+   * @param int $batch_size
+   *   The maximum number of records that will be purged.
+   *
+   * @return array
+   *   An array of workspace association IDs, keyed by their revision IDs.
+   */
+  protected function getWorkspaceAssociationRevisionsToPurge($workspace_id, $batch_size) {
+    return $this->entityTypeManager->getStorage('workspace_association')
+      ->getQuery()
+      ->allRevisions()
+      ->accessCheck(FALSE)
+      ->condition('workspace', $workspace_id)
+      ->sort('revision_id', 'ASC')
+      ->range(0, $batch_size)
+      ->execute();
   }
 
 }
