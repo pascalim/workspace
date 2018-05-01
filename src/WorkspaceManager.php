@@ -209,6 +209,12 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    */
   public function purgeDeletedWorkspacesBatch() {
     $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
+
+    // Bail out early if there are no workspaces to purge.
+    if (empty($deleted_workspace_ids)) {
+      return;
+    }
+
     $batch_size = Settings::get('entity_update_batch_size', 50);
 
     /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
@@ -249,10 +255,9 @@ class WorkspaceManager implements WorkspaceManagerInterface {
         }
       }
     }
-
-    // Remove the deleted workspace ID entry from state if all its associated
-    // entities have been purged.
-    if (!$workspace_association_ids || ($workspace_association_ids && count($workspace_association_ids) < $batch_size)) {
+    else {
+      // Remove the deleted workspace ID entry from state if all its associated
+      // entities have been purged.
       unset($deleted_workspace_ids[$workspace_id]);
       $this->state->set('workspace.deleted', $deleted_workspace_ids);
     }

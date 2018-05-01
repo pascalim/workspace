@@ -63,6 +63,7 @@ class Tables extends BaseTables {
     // method to always pick the revision tables if the field being queried is
     // revisionable.
     if ($active_workspace_id = $this->sqlQuery->getMetaData('active_workspace_id')) {
+      $previous_all_revisions = $this->sqlQuery->getMetaData('all_revisions');
       $this->sqlQuery->addMetaData('all_revisions', TRUE);
     }
 
@@ -70,8 +71,8 @@ class Tables extends BaseTables {
 
     // Restore the 'all_revisions' metadata because we don't want to interfere
     // with the rest of the query.
-    if ($active_workspace_id) {
-      $this->sqlQuery->addMetaData('all_revisions', FALSE);
+    if (isset($previous_all_revisions)) {
+      $this->sqlQuery->addMetaData('all_revisions', $previous_all_revisions);
     }
 
     return $alias;
