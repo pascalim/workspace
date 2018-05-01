@@ -50,7 +50,7 @@ interface WorkspaceManagerInterface {
   public function setActiveWorkspace(WorkspaceInterface $workspace);
 
   /**
-   * Determines whether entity operations or queries should be altered.
+   * Determines whether runtime entity operations should be altered.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type to check.

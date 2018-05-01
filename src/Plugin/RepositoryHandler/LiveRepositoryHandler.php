@@ -198,4 +198,20 @@ class LiveRepositoryHandler extends RepositoryHandlerBase implements RepositoryH
     return $this->workspaceAssociationStorage->getTrackedEntities($this->source);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getNumberOfChangesOnTarget() {
+    $total_changes = $this->getDifferringRevisionIdsOnTarget();
+    return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNumberOfChangesOnSource() {
+    $total_changes = $this->getDifferringRevisionIdsOnSource();
+    return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
+  }
+
 }

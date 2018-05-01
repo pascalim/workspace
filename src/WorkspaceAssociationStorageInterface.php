@@ -11,7 +11,7 @@ use Drupal\Core\Entity\EntityInterface;
 interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInterface {
 
   /**
-   * Marks all workspace association entities pushed for a given workspace.
+   * Triggers clean-up operations after pushing.
    *
    * @param \Drupal\workspace\WorkspaceInterface $workspace
    *   A workspace entity.
@@ -34,15 +34,15 @@ interface WorkspaceAssociationStorageInterface extends ContentEntityStorageInter
   public function getTrackedEntities($workspace_id, $all_revisions = FALSE);
 
   /**
-   * Checks if a given entity is tracked in one or multiple workspaces.
+   * Gets a list of workspace IDs in which an entity is tracked.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   An entity object.
    *
    * @return string[]
    *   An array of workspace IDs where the given entity is tracked, or an empty
-   *   array if it's not tracked anywhere.
+   *   array if it is not tracked anywhere.
    */
-  public function isEntityTracked(EntityInterface $entity);
+  public function getEntityTrackingWorkspaceIds(EntityInterface $entity);
 
 }

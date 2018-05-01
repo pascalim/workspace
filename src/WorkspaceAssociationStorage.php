@@ -31,13 +31,13 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
     $table = $all_revisions ? $this->getRevisionTable() : $this->getBaseTable();
     $query = $this->database->select($table, 'base_table');
     $query
-      ->fields('base_table', ['content_entity_type_id', 'content_entity_id', 'content_entity_revision_id'])
-      ->orderBy('content_entity_revision_id', 'ASC')
+      ->fields('base_table', ['target_entity_type_id', 'target_entity_id', 'target_entity_revision_id'])
+      ->orderBy('target_entity_revision_id', 'ASC')
       ->condition('workspace', $workspace_id);
 
     $tracked_revisions = [];
     foreach ($query->execute() as $record) {
-      $tracked_revisions[$record->content_entity_type_id][$record->content_entity_revision_id] = $record->content_entity_id;
+      $tracked_revisions[$record->target_entity_type_id][$record->target_entity_revision_id] = $record->target_entity_id;
     }
 
     return $tracked_revisions;
@@ -46,12 +46,12 @@ class WorkspaceAssociationStorage extends SqlContentEntityStorage implements Wor
   /**
    * {@inheritdoc}
    */
-  public function isEntityTracked(EntityInterface $entity) {
+  public function getEntityTrackingWorkspaceIds(EntityInterface $entity) {
     $query = $this->database->select($this->getBaseTable(), 'base_table');
     $query
       ->fields('base_table', ['workspace'])
-      ->condition('content_entity_type_id', $entity->getEntityTypeId())
-      ->condition('content_entity_id', $entity->id());
+      ->condition('target_entity_type_id', $entity->getEntityTypeId())
+      ->condition('target_entity_id', $entity->id());
 
     return $query->execute()->fetchCol();
   }

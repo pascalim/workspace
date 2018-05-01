@@ -74,7 +74,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     // List the changes that can be pushed.
     if ($source_rev_diff = $repository_handler->getDifferringRevisionIdsOnSource()) {
-      $total_count = count($source_rev_diff, COUNT_RECURSIVE) - count($source_rev_diff);
+      $total_count = $repository_handler->getNumberOfChangesOnSource();
       $form['deploy'] = [
         '#theme' => 'item_list',
         '#title' => $this->formatPlural($total_count, 'There is @count item that can be deployed from %source_label to %target_label', 'There are @count items that can be deployed from %source_label to %target_label', $args),
@@ -88,7 +88,7 @@ class WorkspaceDeployForm extends ContentEntityForm {
 
     // List the changes that can be pulled.
     if ($target_rev_diff = $repository_handler->getDifferringRevisionIdsOnTarget()) {
-      $total_count = count($target_rev_diff, COUNT_RECURSIVE) - count($target_rev_diff);
+      $total_count = $repository_handler->getNumberOfChangesOnTarget();
       $form['refresh'] = [
         '#theme' => 'item_list',
         '#title' => $this->formatPlural($total_count, 'There is @count item that can be refreshed from %target_label to %source_label', 'There are @count items that can be refreshed from %target_label to %source_label', $args),

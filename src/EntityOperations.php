@@ -72,16 +72,16 @@ class EntityOperations implements ContainerInjectionInterface {
     // current active workspace. If an entity has multiple revisions set for a
     // workspace, only the one with the highest ID is returned.
     $entity_ids = array_keys($entities);
-    $max_revision_id = 'max_content_entity_revision_id';
+    $max_revision_id = 'max_target_entity_revision_id';
     $results = $this->entityTypeManager
       ->getStorage('workspace_association')
       ->getAggregateQuery()
       ->accessCheck(FALSE)
       ->allRevisions()
-      ->aggregate('content_entity_revision_id', 'MAX', NULL, $max_revision_id)
-      ->groupBy('content_entity_id')
-      ->condition('content_entity_type_id', $entity_type_id)
-      ->condition('content_entity_id', $entity_ids, 'IN')
+      ->aggregate('target_entity_revision_id', 'MAX', NULL, $max_revision_id)
+      ->groupBy('target_entity_id')
+      ->condition('target_entity_type_id', $entity_type_id)
+      ->condition('target_entity_id', $entity_ids, 'IN')
       ->condition('workspace', $this->workspaceManager->getActiveWorkspace()->id())
       ->execute();
 
@@ -93,7 +93,7 @@ class EntityOperations implements ContainerInjectionInterface {
     //   https://www.drupal.org/project/drupal/issues/2928888 is resolved.
     if ($results) {
       $results = array_filter($results, function ($result) use ($entities, $max_revision_id) {
-        return $entities[$result['content_entity_id']]->getRevisionId() != $result[$max_revision_id];
+        return $entities[$result['target_entity_id']]->getRevisionId() != $result[$max_revision_id];
       });
     }
 
@@ -226,8 +226,8 @@ class EntityOperations implements ContainerInjectionInterface {
     $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
     if (!$entity->isNew()) {
       $workspace_associations = $workspace_association_storage->loadByProperties([
-        'content_entity_type_id' => $entity->getEntityTypeId(),
-        'content_entity_id' => $entity->id(),
+        'target_entity_type_id' => $entity->getEntityTypeId(),
+        'target_entity_id' => $entity->id(),
       ]);
 
       /** @var \Drupal\Core\Entity\ContentEntityInterface $workspace_association */
@@ -241,13 +241,13 @@ class EntityOperations implements ContainerInjectionInterface {
     }
     else {
       $workspace_association = $workspace_association_storage->create([
-        'content_entity_type_id' => $entity->getEntityTypeId(),
-        'content_entity_id' => $entity->id(),
+        'target_entity_type_id' => $entity->getEntityTypeId(),
+        'target_entity_id' => $entity->id(),
       ]);
     }
 
     // Add the revision ID and the workspace ID.
-    $workspace_association->set('content_entity_revision_id', $entity->getRevisionId());
+    $workspace_association->set('target_entity_revision_id', $entity->getRevisionId());
     $workspace_association->set('workspace', $this->workspaceManager->getActiveWorkspace()->id());
 
     // Save without updating the tracked content entity.
@@ -279,7 +279,7 @@ class EntityOperations implements ContainerInjectionInterface {
 
     /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
     $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
-    if ($workspace_ids = $workspace_association_storage->isEntityTracked($entity)) {
+    if ($workspace_ids = $workspace_association_storage->getEntityTrackingWorkspaceIds($entity)) {
       // An entity can only be edited in one workspace.
       $workspace_id = reset($workspace_ids);
 

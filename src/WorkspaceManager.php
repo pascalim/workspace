@@ -229,14 +229,14 @@ class WorkspaceManager implements WorkspaceManagerInterface {
     if ($workspace_association_ids) {
       $workspace_associations = $workspace_association_storage->loadMultipleRevisions(array_keys($workspace_association_ids));
       foreach ($workspace_associations as $workspace_association) {
-        $associated_entity_storage = $this->entityTypeManager->getStorage($workspace_association->content_entity_type_id->value);
+        $associated_entity_storage = $this->entityTypeManager->getStorage($workspace_association->target_entity_type_id->value);
         // Delete the associated entity revision.
-        if ($entity = $associated_entity_storage->loadRevision($workspace_association->content_entity_revision_id->value)) {
+        if ($entity = $associated_entity_storage->loadRevision($workspace_association->target_entity_revision_id->value)) {
           if ($entity->isDefaultRevision()) {
             $entity->delete();
           }
           else {
-            $associated_entity_storage->deleteRevision($workspace_association->content_entity_revision_id->value);
+            $associated_entity_storage->deleteRevision($workspace_association->target_entity_revision_id->value);
           }
         }
 

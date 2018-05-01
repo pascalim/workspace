@@ -59,7 +59,7 @@ class EntityWorkspaceConflictConstraintValidator extends ConstraintValidator imp
     if (isset($entity) && !$entity->isNew()) {
       /** @var \Drupal\workspace\WorkspaceAssociationStorageInterface $workspace_association_storage */
       $workspace_association_storage = $this->entityTypeManager->getStorage('workspace_association');
-      $workspace_ids = $workspace_association_storage->isEntityTracked($entity);
+      $workspace_ids = $workspace_association_storage->getEntityTrackingWorkspaceIds($entity);
       $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
       if ($workspace_ids && !in_array($active_workspace->id(), $workspace_ids, TRUE)) {

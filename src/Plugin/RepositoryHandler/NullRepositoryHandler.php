@@ -54,6 +54,20 @@ class NullRepositoryHandler extends PluginBase implements RepositoryHandlerInter
   /**
    * {@inheritdoc}
    */
+  public function getNumberOfChangesOnTarget() {
+    return 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNumberOfChangesOnSource() {
+    return 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getLabel() {
     return $this->getPluginDefinition()['label'];
   }

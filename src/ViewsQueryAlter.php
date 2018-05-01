@@ -176,7 +176,7 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
         // Update the join to use our COALESCE.
         $revision_field = $entity_type->getKey('revision');
         $table_info['join']->leftTable = NULL;
-        $table_info['join']->leftField = "COALESCE($workspace_association_table.content_entity_revision_id, $relationship.$revision_field)";
+        $table_info['join']->leftField = "COALESCE($workspace_association_table.target_entity_revision_id, $relationship.$revision_field)";
 
         // Update the join and the table info to our new table name, and to join
         // on the revision key.
@@ -281,12 +281,12 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
     // Construct the join.
     $definition = [
       'table' => 'workspace_association',
-      'field' => 'content_entity_id',
+      'field' => 'target_entity_id',
       'left_table' => $relationship,
       'left_field' => $table_data['table']['base']['field'],
       'extra' => [
         [
-          'field' => 'content_entity_type_id',
+          'field' => 'target_entity_type_id',
           'value' => $entity_type_id,
         ],
         [
@@ -372,7 +372,7 @@ class ViewsQueryAlter implements ContainerInjectionInterface {
       'field' => $field,
       // Making this explicitly null allows the left table to be a formula.
       'left_table' => NULL,
-      'left_field' => "COALESCE($workspace_association_table.content_entity_revision_id, $relationship.$field)",
+      'left_field' => "COALESCE($workspace_association_table.target_entity_revision_id, $relationship.$field)",
     ];
 
     /** @var \Drupal\views\Plugin\views\join\JoinPluginInterface $join */

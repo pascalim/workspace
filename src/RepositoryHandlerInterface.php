@@ -100,4 +100,28 @@ interface RepositoryHandlerInterface extends PluginInspectionInterface, Derivati
    */
   public function getDifferringRevisionIdsOnSource();
 
+  /**
+   * Gets the total number of items which have changed on the target.
+   *
+   * This returns the aggregated changes count across all entity types.
+   * For example, if two nodes and one taxonomy term have changed on the target,
+   * the return value is 3.
+   *
+   * @return int
+   *   The number of differing revisions.
+   */
+  public function getNumberOfChangesOnTarget();
+
+  /**
+   * Gets the total number of items which have changed on the source.
+   *
+   * This returns the aggregated changes count across all entity types.
+   * For example, if two nodes and one taxonomy term have changed on the source,
+   * the return value is 3.
+   *
+   * @return int
+   *   The number of differing revisions.
+   */
+  public function getNumberOfChangesOnSource();
+
 }
