@@ -124,47 +124,8 @@ class EntityAccess implements ContainerInjectionInterface {
     // to ALL THE THINGS! That's why this is a dangerous permission.
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-    return AccessResult::allowedIfHasPermission($account, 'bypass entity access workspace ' . $active_workspace->id())->addCacheableDependency($active_workspace)
-      ->orIf(
-        AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($active_workspace)
-          ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass entity access own workspace'))
-      );
-  }
-
-  /**
-   * Returns an array of workspace-specific permissions.
-   *
-   * @return array
-   *   The workspace permissions.
-   */
-  public function workspacePermissions() {
-    $perms = [];
-
-    foreach ($this->entityTypeManager->getStorage('workspace')->loadMultiple() as $workspace) {
-      /** @var \Drupal\workspace\WorkspaceInterface $workspace */
-      $perms += $this->createWorkspaceBypassPermission($workspace);
-    }
-
-    return $perms;
-  }
-
-  /**
-   * Derives the "bypass entity access" permission for a specific workspace.
-   *
-   * @param \Drupal\workspace\WorkspaceInterface $workspace
-   *   The workspace from which to derive the permission.
-   *
-   * @return array
-   *   A single-item array with the permission to define.
-   */
-  protected function createWorkspaceBypassPermission(WorkspaceInterface $workspace) {
-    $perms['bypass entity access workspace ' . $workspace->id()] = [
-      'title' => $this->t('Bypass content entity access in %workspace workspace', ['%workspace' => $workspace->label()]),
-      'description' => $this->t('Allow all Edit/Update/Delete permissions for all content in the %workspace workspace', ['%workspace' => $workspace->label()]),
-      'restrict access' => TRUE,
-    ];
-
-    return $perms;
+    return AccessResult::allowedIf($active_workspace->getOwnerId() == $account->id())->cachePerUser()->addCacheableDependency($active_workspace)
+      ->andIf(AccessResult::allowedIfHasPermission($account, 'bypass entity access own workspace'));
   }
 
 }

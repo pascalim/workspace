@@ -26,9 +26,3 @@ bypass entity access own workspace:
   title: Bypass content entity access in own workspace
   description: Allow all Edit/Update/Delete permissions for all content entities in a workspace owned by the user.
   restrict access: TRUE
-
-update any workspace from its target:
-  title: Update any workspace from its target
-
-permission_callbacks:
-  - Drupal\workspace\EntityAccess::workspacePermissions
