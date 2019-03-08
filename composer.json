@@ -10,5 +10,12 @@
     "issues": "http://drupal.org/project/issues/workspace",
     "source": "http://cgit.drupalcode.org/workspace"
   },
-  "require": { }
+  "require": { },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
+  }
 }

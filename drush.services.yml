@@ -1,0 +1,11 @@
+services:
+  workspace.commands:
+    class: \Drupal\workspace\Commands\WorkspaceCommands
+    arguments:
+      - '@cron'
+      - '@entity_field.manager'
+      - '@entity_type.manager'
+      - '@module_installer'
+      - '@workspace.manager'
+    tags:
+      - { name: drush.command }
